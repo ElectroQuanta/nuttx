@@ -3742,6 +3742,7 @@ config ARCH_BOARD
 	default "fvp-armv8r"                if ARCH_BOARD_FVP_ARMV8R
 	default "fvp-armv8r-aarch32"        if ARCH_BOARD_FVP_ARMV8R_AARCH32
 	default "imx8qm-mek"                if ARCH_BOARD_IMX8QM_MEK
+	default "imx8mn-ddr3-evk"           if ARCH_BOARD_IMX8MN_DDR3_EVK
 	default "imx93-evk"                 if ARCH_BOARD_IMX93_EVK
 	default "imx95-a55-evk"             if ARCH_BOARD_IMX95_A55_EVK
 	default "avaota-a1"                 if ARCH_BOARD_AVAOTA_A1

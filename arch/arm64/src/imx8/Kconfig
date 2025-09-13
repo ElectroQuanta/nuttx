@@ -17,15 +17,40 @@ config ARCH_CHIP_IMX8_QUADMAX
 	select ARMV8A_HAVE_GICv3
 	select ARCH_CORTEX_A53
 
+config ARCH_CHIP_IMX8_MN
+    bool "i.MX8M Nano Application Processor"
+    select ARMV8A_HAVE_GICv3
+    select ARCH_CORTEX_A53
+
 endchoice # i.MX8 Chip Selection
 
 endmenu # "i.MX8 Chip Selection"
 
 menu "i.MX8 Peripheral Selection"
+
 config IMX8_UART1
 	bool "UART1"
 	default n
 	select UART1_SERIALDRIVER
+	select ARCH_HAVE_SERIAL_TERMIOS
+
+config IMX8_UART2
+	bool "UART2"
+	default n
+	select UART2_SERIALDRIVER
+	select ARCH_HAVE_SERIAL_TERMIOS
+
+config IMX8_UART3
+	bool "UART3"
+	default n
+	select UART3_SERIALDRIVER
+	select ARCH_HAVE_SERIAL_TERMIOS
+
+config IMX8_UART4
+	bool "UART4"
+	default n
+	select UART4_SERIALDRIVER
+	select ARCH_HAVE_SERIAL_TERMIOS
 endmenu # iMX Peripheral Selection
 
 endif # ARCH_CHIP_IMX8

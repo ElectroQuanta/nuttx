@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm64/src/imx8/imx8_serial.h
+ * arch/arm/src/imx6/imx_lowputc.h
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,47 +20,37 @@
  *
  ****************************************************************************/
 
-#ifndef __ARCH_ARM64_SRC_IMX8_IMX8_SERIAL_H
-#define __ARCH_ARM64_SRC_IMX8_IMX8_SERIAL_H
+#ifndef __ARCH_ARM64_SRC_IMX8_IMX8MN_LOWPUTC_H
+#define __ARCH_ARM64_SRC_IMX8_IMX8MN_LOWPUTC_H
 
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
+#include <nuttx/compiler.h>
 
-#include "arm64_internal.h"
+#include <sys/types.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-/****************************************************************************
- * Pre-processor Definitions
- ****************************************************************************/
+/* #include "arm_internal.h" */
+#include "chip.h"
 
 /****************************************************************************
  * Public Types
  ****************************************************************************/
 
-/****************************************************************************
- * Inline Functions
- ****************************************************************************/
+#ifdef IMX_HAVE_UART
+/* This structure describes the configuration of an UART */
 
-#ifndef __ASSEMBLY__
-
-/****************************************************************************
- * Public Data
- ****************************************************************************/
-
-#ifdef CONFIG_ARCH_CHIP_IMX8_QUADMAX
-
-#define SPI_OFFSET                  32
-#define CONFIG_IMX8QM_UART1_BASE    0x5a060000
-#define CONFIG_IMX8QM_UART1_IRQ     (SPI_OFFSET + 345)
-
-#elif defined(CONFIG_ARCH_CHIP_IMX8_MN)
-
-#define SPI_OFFSET                  32
-#define CONFIG_IMX8MN_UART2_BASE    0x30890000
-#define CONFIG_IMX8MN_UART2_IRQ     (SPI_OFFSET + 27)
-
+struct uart_config_s
+{
+  uint32_t baud;          /* Configured baud */
+  uint8_t  parity;        /* 0=none, 1=odd, 2=even */
+  uint8_t  bits;          /* Number of bits (5-9) */
+  bool     stopbits2;     /* true: Configure with 2 stop bits instead of 1 */
+};
 #endif
 
 /****************************************************************************
@@ -68,48 +58,43 @@
  ****************************************************************************/
 
 /****************************************************************************
- * Name: imx_earlyserialinit
+ * Name: imx_lowsetup
  *
  * Description:
- *   Performs the low level UART initialization early in debug so that the
- *   serial console will be available during boot up.  This must be called
- *   before arm_serialinit.
+ *   Called at the very beginning of _start.  Performs low level
+ *   initialization including setup of the console UART.  This UART done
+ *   early so that the serial console is available for debugging very early
+ *   in the boot sequence.
  *
  ****************************************************************************/
 
-#ifdef USE_EARLYSERIALINIT
-void imx8_earlyserialinit(void);
+void imx_lowsetup(void);
 
+/****************************************************************************
+ * Name: imx_uart_configure
+ *
+ * Description:
+ *   Configure a UART for non-interrupt driven operation
+ *
+ ****************************************************************************/
+
+#ifdef IMX_HAVE_UART
+int imx_uart_configure(uint32_t base,
+                       const struct uart_config_s *config);
 #endif
 
 /****************************************************************************
- * Name: uart_earlyserialinit
+ * Name: imx_lowputc
  *
  * Description:
- *   Performs the low level UART initialization early in debug so that the
- *   serial console will be available during boot up.  This must be called
- *   before arm_serialinit.
+ *   Output a byte with as few system dependencies as possible.
+ *   This will even work BEFORE the console is initialized if we are booting
+ *   from U-Boot (and the same UART is used for the console, of course.)
  *
  ****************************************************************************/
 
-#if defined(USE_EARLYSERIALINIT) && defined(IMX8_HAVE_UART)
-void uart_earlyserialinit(void);
-
+#ifdef IMX_HAVE_UART
+void imx_lowputc(int ch);
 #endif
 
-/****************************************************************************
- * Name: uart_serialinit
- *
- * Description:
- *   Register the UART serial console and serial ports.  This assumes that
- *   uart_earlyserialinit was called previously.
- *
- ****************************************************************************/
-
-#ifdef IMX8_HAVE_UART
-void uart_serialinit(void);
-
-#endif
-
-#endif /* __ASSEMBLY__ */
-#endif /* __ARCH_ARM_SRC_IMX6_IMX_SERIAL_H */
+#endif /* __ARCH_ARM64_SRC_IMX8_IMX8MN_LOWPUTC_H */

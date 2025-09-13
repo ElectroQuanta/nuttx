@@ -43,18 +43,51 @@
 #include "imx8_boot.h"
 #include "imx8_serial.h"
 
+
+#if defined(CONFIG_ARCH_CHIP_IMX8_MN)
+#include "hardware/imx8mn/imx8mn_memorymap.h"
+#endif
+
 /****************************************************************************
  * Private Data
  ****************************************************************************/
 
-static const struct arm_mmu_region g_mmu_regions[] =
-{
-    MMU_REGION_FLAT_ENTRY("DEVICE_REGION",
-                          CONFIG_DEVICEIO_BASEADDR, MB(512),
+static const struct arm_mmu_region g_mmu_regions[] = {
+
+/* Peripheral regions, non-cacheable device memory */
+
+#if defined(CONFIG_ARCH_CHIP_IMX8_QUADMAX)
+    MMU_REGION_FLAT_ENTRY("DEVICE_REGION", (uint64_t)CONFIG_DEVICEIO_BASEADDR,
+                          (uint64_t)CONFIG_DEVICEIO_SIZE,
                           MT_DEVICE_NGNRNE | MT_RW | MT_SECURE),
 
+#elif defined(CONFIG_ARCH_CHIP_IMX8_MN)
+  MMU_REGION_FLAT_ENTRY("AIPS1",
+						(uint64_t)IMX_AIPS1_PSECTION,
+						(uint64_t)IMX_AIPS1_SECTION_SIZE,
+						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE),
+    
+  MMU_REGION_FLAT_ENTRY("AIPS2",
+						(uint64_t)IMX_AIPS2_PSECTION,
+						(uint64_t)IMX_AIPS2_SECTION_SIZE,
+						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE),
+  MMU_REGION_FLAT_ENTRY("AIPS3",
+						(uint64_t)IMX_AIPS3_PSECTION,
+						(uint64_t)IMX_AIPS3_SECTION_SIZE,
+						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE),
+  MMU_REGION_FLAT_ENTRY("AIPS4",
+						(uint64_t)IMX_AIPS4_PSECTION,
+						(uint64_t)IMX_AIPS4_SECTION_SIZE,
+						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE),
+  /* /\* GIC Distributor + Redistributor *\/ */
+  MMU_REGION_FLAT_ENTRY("GIC", 0x38800000, 0x00100000, MT_DEVICE_NGNRNE |
+						MT_RW | MT_SECURE),
+#endif
+
+    /* DRAM */
     MMU_REGION_FLAT_ENTRY("DRAM0_S0",
-                          CONFIG_RAMBANK1_ADDR, MB(512),
+						  (uint64_t) CONFIG_RAMBANK1_ADDR,
+                          (uint64_t) CONFIG_RAMBANK1_SIZE,
                           MT_NORMAL | MT_RW | MT_SECURE),
 };
 
@@ -105,12 +138,13 @@ void arm64_el_init(void)
 void arm64_chip_boot(void)
 {
   /* MAP IO and DRAM, enable MMU. */
-
+    
   arm64_mmu_init(true);
 
   /* Perform board-specific device initialization. This would include
    * configuration of board specific resources such as GPIOs, LEDs, etc.
    */
+
 
   imx8_board_initialize();
 
