@@ -2413,6 +2413,14 @@ config ARCH_BOARD_IMX8QM_MEK
 		This options selects support for NuttX on the NXP i.MX8 QuadMax CPUs MEK
 		configure board with ARM Cortex-A53.
 
+config ARCH_BOARD_IMX8MN_DDR3_EVK
+	bool "NXP i.MX8 M Nano CPUs DDR3 EVK board"
+	depends on ARCH_CHIP_IMX8_MN
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		This options selects support for NuttX on the NXP i.MX8 M Nano CPUs EVK
+		configure board with ARM Cortex-A53.
+
 config ARCH_BOARD_IMX93_EVK
 	bool "NXP i.MX93 CPUs EVK board"
 	depends on ARCH_CHIP_IMX93
@@ -3971,6 +3979,9 @@ source "boards/arm/fvp-v8r-aarch32/fvp-armv8r-aarch32/Kconfig"
 endif
 if ARCH_BOARD_IMX8QM_MEK
 source "boards/arm64/imx8/imx8qm-mek/Kconfig"
+endif
+if ARCH_BOARD_IMX8MN_DDR3_EVK
+source "boards/arm64/imx8/imx8mn-ddr3-evk/Kconfig"
 endif
 if ARCH_BOARD_IMX93_EVK
 source "boards/arm64/imx9/imx93-evk/Kconfig"
