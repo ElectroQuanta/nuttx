@@ -84,7 +84,7 @@ int imx_uart_configure(uint32_t base,
 #endif
 
 /****************************************************************************
- * Name: imx_lowputc
+ * Name: arm64_lowputc
  *
  * Description:
  *   Output a byte with as few system dependencies as possible.
@@ -94,7 +94,20 @@ int imx_uart_configure(uint32_t base,
  ****************************************************************************/
 
 #ifdef IMX_HAVE_UART
-void imx_lowputc(int ch);
+void arm64_lowputc(char ch);
+#endif
+
+
+/****************************************************************************
+ * Name: arm64_earlyprintinit
+ *
+ * Description:
+ *   Configure UART for non-interrupt driven operation
+ *
+ ****************************************************************************/
+
+#ifdef IMX_HAVE_UART
+void arm64_earlyprintinit(char ch);
 #endif
 
 #endif /* __ARCH_ARM64_SRC_IMX8_IMX8MN_LOWPUTC_H */

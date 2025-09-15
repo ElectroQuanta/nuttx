@@ -555,7 +555,7 @@ int imx_uart_configure(uint32_t base, const struct uart_config_s *config)
 #endif /* IMX_HAVE_UART */
 
 /****************************************************************************
- * Name: imx_lowputc
+ * Name: arm64_lowputc
  *
  * Description:
  *   Output a byte with as few system dependencies as possible.  This will
@@ -565,7 +565,8 @@ int imx_uart_configure(uint32_t base, const struct uart_config_s *config)
  ****************************************************************************/
 
 #ifdef IMX_HAVE_UART
-void imx_lowputc(int ch)
+//void imx_lowputc(int ch)
+void arm64_lowputc(char ch)
 {
   /* Poll the TX fifo trigger level bit of the UART status register. When the
    * TXFE bit is non-zero, the TX Buffer FIFO is empty.
@@ -581,5 +582,22 @@ void imx_lowputc(int ch)
   /* Send the character by writing it into the UART_TXD register. */
 
   putreg32((uint32_t)ch, IMX_CONSOLE_VBASE + UART_TXD_OFFSET);
+}
+#endif
+
+
+
+/****************************************************************************
+ * Name: arm64_earlyprintinit
+ *
+ * Description:
+ *   Configure UART for non-interrupt driven operation
+ *
+ ****************************************************************************/
+
+#ifdef IMX_HAVE_UART
+void arm64_earlyprintinit(char ch)
+{
+  /* Assume bootloader has already set up the UART */
 }
 #endif

@@ -1079,7 +1079,7 @@ void up_putc(int ch)
    */
 
   imx_disableuartint(priv, &ier);
-  imx_lowputc(ch);
+  arm64_lowputc(ch);
   imx_restoreuartint(priv, ier);
 }
 

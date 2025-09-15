@@ -26,9 +26,9 @@ include common/Make.defs
 
 CHIP_CSRCS  = imx8_boot.c imx8_timer.c
 
-ifeq ($(CONFIG_ARCH_EARLY_PRINT),y)
-  CHIP_ASRCS  = imx8_lowputc.S
-endif
+# ifeq ($(CONFIG_ARCH_EARLY_PRINT),y)
+#   CHIP_ASRCS  = imx8_lowputc.S
+# endif
 
 ifeq ($(CONFIG_ARCH_CHIP_IMX8_QUADMAX),y)
   CHIP_CSRCS += imx8qm_serial.c
