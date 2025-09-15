@@ -579,6 +579,20 @@ void arm64_lowputc(char ch)
    * return.
    */
 
+  if (ch == '\n') {
+	
+      /* Send the carriage return by writing it into the UART_TXD register. */
+
+      putreg32((uint32_t)'\r', IMX_CONSOLE_VBASE + UART_TXD_OFFSET);
+
+      /* Wait for the transmit register to be emptied. When the TXFE bit is
+       * non-zero, the TX Buffer FIFO is empty.
+       */
+
+	  while ((getreg32(IMX_CONSOLE_VBASE + UART_USR2_OFFSET) &
+			  UART_USR2_TXFE) == 0);
+  }
+
   /* Send the character by writing it into the UART_TXD register. */
 
   putreg32((uint32_t)ch, IMX_CONSOLE_VBASE + UART_TXD_OFFSET);

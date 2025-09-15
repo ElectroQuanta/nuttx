@@ -83,31 +83,4 @@ int imx_uart_configure(uint32_t base,
                        const struct uart_config_s *config);
 #endif
 
-/****************************************************************************
- * Name: arm64_lowputc
- *
- * Description:
- *   Output a byte with as few system dependencies as possible.
- *   This will even work BEFORE the console is initialized if we are booting
- *   from U-Boot (and the same UART is used for the console, of course.)
- *
- ****************************************************************************/
-
-#ifdef IMX_HAVE_UART
-void arm64_lowputc(char ch);
-#endif
-
-
-/****************************************************************************
- * Name: arm64_earlyprintinit
- *
- * Description:
- *   Configure UART for non-interrupt driven operation
- *
- ****************************************************************************/
-
-#ifdef IMX_HAVE_UART
-void arm64_earlyprintinit(char ch);
-#endif
-
 #endif /* __ARCH_ARM64_SRC_IMX8_IMX8MN_LOWPUTC_H */
