@@ -38,7 +38,8 @@
 /* #include "imx_gpio.h" */
 #include "imx8mn_lowputc.h"
 #include "arm64_arch.h"
-/* #include "hardware/imx_pinmux.h" */
+#include "hardware/imx8mn/imx8mn_ccm.h"
+#include "hardware/imx8mn/imx8mn_iomuxc.h"
 #include <arch/board/board.h> /* Include last:  has dependencies */
 
 /****************************************************************************
@@ -143,128 +144,106 @@ void imx_lowsetup(void)
 {
 #ifndef CONFIG_SUPPRESS_UART_CONFIG
 #ifdef IMX_HAVE_UART
-/*   uint32_t regval; */
+  /*   uint32_t regval; */
 
-/*   /\* Make certain that the ipg_clock and ipg_perclk are enabled for the UART */
-/*    * modules.  Here we set BOTH the ipg_clk and ipg_perclk so that clocking */
-/*    * is on in all modes (except STOP). */
-/*    *\/ */
+  /* Enable clocks */
+  /* Set domains for CCGR and PLL and IOMUXC */
+  ccm_set_mode(IMX_CCM_PLL_CTRL_PLL1_DIV10, lpmode_all);
+  ccm_set_mode(IMX_CCM_CCGR_IOMUXC, lpmode_all);
 
-/*   regval  = getreg32(IMX_CCM_CCGR5); */
-/*   regval &= ~(CCM_CCGR5_CG12_MASK | CCM_CCGR5_CG13_MASK); */
-/*   regval |= (CCM_CCGR5_CG12(CCM_CCGR_ALLMODES) | */
-/*              CCM_CCGR5_CG13(CCM_CCGR_ALLMODES)); */
-/*   putreg32(regval, IMX_CCM_CCGR5); */
 
-/* #ifdef CONFIG_IMX6_UART1 */
-/*   /\* Disable and configure UART1 *\/ */
+#ifdef CONFIG_IMX8_UART1
+  ccm_set_mode(IMX_CCM_CCGR_UART1, lpmode_all);
 
-/*   putreg32(0, IMX_UART1_VBASE + UART_UCR1_OFFSET); */
-/*   putreg32(0, IMX_UART1_VBASE + UART_UCR2_OFFSET); */
-/*   putreg32(0, IMX_UART1_VBASE + UART_UCR3_OFFSET); */
-/*   putreg32(0, IMX_UART1_VBASE + UART_UCR4_OFFSET); */
+  /* Enable clock with 80 MHz frequency*/
+  ccm_clk_root_enable(IMX_CCM_TARGET_ROOT_UART1, clk_sys_pll1_div10, true);
 
-/*   /\* Configure UART1 pins: RXD and TXD.  Also configure RTS and CTS if flow */
-/*    * control is enabled.  REVISIT: DTR, DCD, RI, and DSR -- not configured. */
-/*    *\/ */
+  /* Configure IOMUXC for UART2 */
+  iomuxc_config_mux(IMX_IOMUXC_SW_MUX_CTL_PAD_UART1_RXD,
+                    IMX_IOMUXC_SW_MUX_CTL_UART1_RXD_ALT0);
+  iomuxc_config_daisy(IMX_IOMUXC_UART1_RX_SELECT_INPUT,
+                      IMX_IOMUXC_UART1_RX_DAISY_ALT0);
+  iomuxc_config_pad(IMX_IOMUXC_SW_PAD_CTL_PAD_UART1_RXD,
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_PE |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_IS |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_PUE |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_SR
+					);
+  iomuxc_config_mux(IMX_IOMUXC_SW_MUX_CTL_PAD_UART1_TXD,
+                    IMX_IOMUXC_SW_MUX_CTL_UART1_TXD_ALT0);
+  iomuxc_config_pad(IMX_IOMUXC_SW_PAD_CTL_PAD_UART1_TXD,
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_SR |
+                        IMX_IOMUXC_SW_PAD_CTL_PAD_DSE_X4);
+#endif  
+#ifdef CONFIG_IMX8_UART2
+  ccm_set_mode(IMX_CCM_CCGR_UART2, lpmode_all);
 
-/*   imx_config_gpio(GPIO_UART1_RX_DATA); */
-/*   imx_config_gpio(GPIO_UART1_TX_DATA); */
-/* #ifdef CONFIG_UART1_OFLOWCONTROL */
-/*   imx_config_gpio(GPIO_UART1_CTS); */
-/* #endif */
-/* #ifdef CONFIG_UART1_IFLOWCONTROL */
-/*   imx_config_gpio(GPIO_UART1_RTS); */
-/* #endif */
-/* #endif */
+  /* Enable clock with 80 MHz frequency*/
+  ccm_clk_root_enable(IMX_CCM_TARGET_ROOT_UART2, clk_sys_pll1_div10, true);
 
-/* #ifdef CONFIG_IMX6_UART2 */
-/*   /\* Disable and configure UART2 *\/ */
+  /* Configure IOMUXC for UART2 */
+  iomuxc_config_mux(IMX_IOMUXC_SW_MUX_CTL_PAD_UART2_RXD,
+                    IMX_IOMUXC_SW_MUX_CTL_UART2_RXD_ALT0);
+  iomuxc_config_daisy(IMX_IOMUXC_UART2_RX_SELECT_INPUT,
+                      IMX_IOMUXC_UART2_RX_DAISY_ALT0);
+  iomuxc_config_pad(IMX_IOMUXC_SW_PAD_CTL_PAD_UART2_RXD,
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_PE |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_IS |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_PUE |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_SR
+					);
+  iomuxc_config_mux(IMX_IOMUXC_SW_MUX_CTL_PAD_UART2_TXD,
+                    IMX_IOMUXC_SW_MUX_CTL_UART2_TXD_ALT0);
+  iomuxc_config_pad(IMX_IOMUXC_SW_PAD_CTL_PAD_UART2_TXD,
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_SR |
+                        IMX_IOMUXC_SW_PAD_CTL_PAD_DSE_X4);
+#endif  
+#ifdef CONFIG_IMX8_UART3
+  ccm_set_mode(IMX_CCM_CCGR_UART3, lpmode_all);
 
-/*   putreg32(0, IMX_UART2_VBASE + UART_UCR1_OFFSET); */
-/*   putreg32(0, IMX_UART2_VBASE + UART_UCR2_OFFSET); */
-/*   putreg32(0, IMX_UART2_VBASE + UART_UCR3_OFFSET); */
-/*   putreg32(0, IMX_UART2_VBASE + UART_UCR4_OFFSET); */
+  /* Enable clock with 80 MHz frequency*/
+  ccm_clk_root_enable(IMX_CCM_TARGET_ROOT_UART3, clk_sys_pll1_div10, true);
 
-/*   /\* Configure UART2 pins: RXD and TXD.  Also configure RTS and CTS if flow */
-/*    * control is enabled. */
-/*    *\/ */
+  /* Configure IOMUXC for UART2 */
+  iomuxc_config_mux(IMX_IOMUXC_SW_MUX_CTL_PAD_UART3_RXD,
+                    IMX_IOMUXC_SW_MUX_CTL_UART3_RXD_ALT0);
+  iomuxc_config_daisy(IMX_IOMUXC_UART3_RX_SELECT_INPUT,
+                      IMX_IOMUXC_UART3_RX_DAISY_ALT0);
+  iomuxc_config_pad(IMX_IOMUXC_SW_PAD_CTL_PAD_UART3_RXD,
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_PE |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_IS |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_PUE |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_SR
+					);
+  iomuxc_config_mux(IMX_IOMUXC_SW_MUX_CTL_PAD_UART3_TXD,
+                    IMX_IOMUXC_SW_MUX_CTL_UART3_TXD_ALT0);
+  iomuxc_config_pad(IMX_IOMUXC_SW_PAD_CTL_PAD_UART3_TXD,
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_SR |
+                        IMX_IOMUXC_SW_PAD_CTL_PAD_DSE_X4);
+#endif  
+#ifdef CONFIG_IMX8_UART4
+  ccm_set_mode(IMX_CCM_CCGR_UART4, lpmode_all);
 
-/*   imx_config_gpio(GPIO_UART2_RX_DATA); */
-/*   imx_config_gpio(GPIO_UART2_TX_DATA); */
-/* #ifdef CONFIG_UART1_OFLOWCONTROL */
-/*   imx_config_gpio(GPIO_UART2_CTS); */
-/* #endif */
-/* #ifdef CONFIG_UART1_IFLOWCONTROL */
-/*   imx_config_gpio(GPIO_UART2_RTS); */
-/* #endif */
-/* #endif */
+  /* Enable clock with 80 MHz frequency*/
+  ccm_clk_root_enable(IMX_CCM_TARGET_ROOT_UART4, clk_sys_pll1_div10, true);
 
-/* #ifdef CONFIG_IMX6_UART3 */
-/*   /\* Disable and configure UART3 *\/ */
-
-/*   putreg32(0, IMX_UART3_VBASE + UART_UCR1_OFFSET); */
-/*   putreg32(0, IMX_UART3_VBASE + UART_UCR2_OFFSET); */
-/*   putreg32(0, IMX_UART3_VBASE + UART_UCR3_OFFSET); */
-/*   putreg32(0, IMX_UART3_VBASE + UART_UCR4_OFFSET); */
-
-/*   /\* Configure UART3 pins: RXD and TXD.  Also configure RTS and CTS if flow */
-/*    * control is enabled. */
-/*    *\/ */
-
-/*   imx_config_gpio(GPIO_UART3_RX_DATA); */
-/*   imx_config_gpio(GPIO_UART3_TX_DATA); */
-/* #ifdef CONFIG_UART1_OFLOWCONTROL */
-/*   imx_config_gpio(GPIO_UART3_CTS); */
-/* #endif */
-/* #ifdef CONFIG_UART1_IFLOWCONTROL */
-/*   imx_config_gpio(GPIO_UART3_RTS); */
-/* #endif */
-/* #endif */
-
-/* #ifdef CONFIG_IMX6_UART4 */
-/*   /\* Disable and configure UART4 *\/ */
-
-/*   putreg32(0, IMX_UART4_VBASE + UART_UCR1_OFFSET); */
-/*   putreg32(0, IMX_UART4_VBASE + UART_UCR2_OFFSET); */
-/*   putreg32(0, IMX_UART4_VBASE + UART_UCR3_OFFSET); */
-/*   putreg32(0, IMX_UART4_VBASE + UART_UCR4_OFFSET); */
-
-/*   /\* Configure UART4 pins: RXD and TXD.  Also configure RTS and CTS if flow */
-/*    * control is enabled. */
-/*    *\/ */
-
-/*   imx_config_gpio(GPIO_UART4_RX_DATA); */
-/*   imx_config_gpio(GPIO_UART4_TX_DATA); */
-/* #ifdef CONFIG_UART1_OFLOWCONTROL */
-/*   imx_config_gpio(GPIO_UART4_CTS); */
-/* #endif */
-/* #ifdef CONFIG_UART1_IFLOWCONTROL */
-/*   imx_config_gpio(GPIO_UART4_RTS); */
-/* #endif */
-/* #endif */
-
-/* #ifdef CONFIG_IMX6_UART5 */
-/*   /\* Disable and configure UART5 *\/ */
-
-/*   putreg32(0, IMX_UART5_VBASE + UART_UCR1_OFFSET); */
-/*   putreg32(0, IMX_UART5_VBASE + UART_UCR2_OFFSET); */
-/*   putreg32(0, IMX_UART5_VBASE + UART_UCR3_OFFSET); */
-/*   putreg32(0, IMX_UART5_VBASE + UART_UCR4_OFFSET); */
-
-/*   /\* Configure UART5 pins: RXD and TXD.  Also configure RTS and CTS if flow */
-/*    * control is enabled. */
-/*    *\/ */
-
-/*   imx_config_gpio(GPIO_UART5_RX_DATA); */
-/*   imx_config_gpio(GPIO_UART5_TX_DATA); */
-/* #ifdef CONFIG_UART1_OFLOWCONTROL */
-/*   imx_config_gpio(GPIO_UART5_CTS); */
-/* #endif */
-/* #ifdef CONFIG_UART1_IFLOWCONTROL */
-/*   imx_config_gpio(GPIO_UART5_RTS); */
-/* #endif */
-/* #endif */
+  /* Configure IOMUXC for UART2 */
+  iomuxc_config_mux(IMX_IOMUXC_SW_MUX_CTL_PAD_UART4_RXD,
+                    IMX_IOMUXC_SW_MUX_CTL_UART4_RXD_ALT0);
+  iomuxc_config_daisy(IMX_IOMUXC_UART4_RX_SELECT_INPUT,
+                      IMX_IOMUXC_UART4_RX_DAISY_ALT0);
+  iomuxc_config_pad(IMX_IOMUXC_SW_PAD_CTL_PAD_UART4_RXD,
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_PE |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_IS |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_PUE |
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_SR
+					);
+  iomuxc_config_mux(IMX_IOMUXC_SW_MUX_CTL_PAD_UART4_TXD,
+                    IMX_IOMUXC_SW_MUX_CTL_UART4_TXD_ALT0);
+  iomuxc_config_pad(IMX_IOMUXC_SW_PAD_CTL_PAD_UART4_TXD,
+                    IMX_IOMUXC_SW_PAD_CTL_PAD_SR |
+                        IMX_IOMUXC_SW_PAD_CTL_PAD_DSE_X4);
+#endif  
 
 #ifdef IMX_HAVE_UART_CONSOLE
   /* Configure the serial console for initial, non-interrupt driver mode */
@@ -286,269 +265,269 @@ void imx_lowsetup(void)
 #ifdef IMX_HAVE_UART
 int imx_uart_configure(uint32_t base, const struct uart_config_s *config)
 {
-/* #ifndef CONFIG_SUPPRESS_UART_CONFIG */
-/*   uint64_t tmp; */
-/*   uint32_t regval; */
-/*   uint32_t ucr2; */
-/*   uint32_t refclk; */
-/*   uint32_t div; */
-/*   uint32_t num; */
-/*   uint32_t den; */
-/*   b16_t ratio; */
+#ifndef CONFIG_SUPPRESS_UART_CONFIG
+  uint64_t tmp;
+  uint32_t regval;
+  uint32_t ucr2;
+  uint32_t refclk;
+  uint32_t div;
+  uint32_t num;
+  uint32_t den;
+  b16_t ratio;
 
-/*   /\* Disable the UART *\/ */
+  /* Disable the UART */
 
-/*   putreg32(0, base + UART_UCR1_OFFSET); */
-/*   putreg32(0, base + UART_UCR2_OFFSET); */
-/*   putreg32(0, base + UART_UCR3_OFFSET); */
-/*   putreg32(0, base + UART_UCR4_OFFSET); */
+  putreg32(0, base + UART_UCR1_OFFSET);
+  putreg32(0, base + UART_UCR2_OFFSET);
+  putreg32(0, base + UART_UCR3_OFFSET);
+  putreg32(0, base + UART_UCR4_OFFSET);
 
-/*   /\* Wait for the UART to come out of reset *\/ */
+  /* Wait for the UART to come out of reset */
 
-/*   while ((getreg32(base + UART_UCR2_OFFSET) & UART_UCR2_SRST) == 0); */
+  while ((getreg32(base + UART_UCR2_OFFSET) & UART_UCR2_SRST) == 0);
 
-/*   /\* Set up UCR2, Clearing all bits that will be configured below. *\/ */
+  /* Set up UCR2, Clearing all bits that will be configured below. */
 
-/*   ucr2  = getreg32(base + UART_UCR2_OFFSET); */
-/*   ucr2 &= ~(UART_UCR2_WS   | UART_UCR2_STPB | UART_UCR2_PREN | */
-/*             UART_UCR2_PROE | UART_UCR2_IRTS | UART_UCR2_CTSC); */
+  ucr2  = getreg32(base + UART_UCR2_OFFSET);
+  ucr2 &= ~(UART_UCR2_WS   | UART_UCR2_STPB | UART_UCR2_PREN |
+            UART_UCR2_PROE | UART_UCR2_IRTS | UART_UCR2_CTSC);
 
-/*   /\* Select the number of data bits *\/ */
+  /* Select the number of data bits */
 
-/*   DEBUGASSERT(config->bits == 7 || config->bits == 8); */
-/*   if (config->bits == 8) */
-/*     { */
-/*       ucr2 |= UART_UCR2_WS; */
-/*     } */
+  DEBUGASSERT(config->bits == 7 || config->bits == 8);
+  if (config->bits == 8)
+    {
+      ucr2 |= UART_UCR2_WS;
+    }
 
-/*   /\* Select the number of stop bits *\/ */
+  /* Select the number of stop bits */
 
-/*   if (config->stopbits2) */
-/*     { */
-/*       ucr2 |= UART_UCR2_STPB; */
-/*     } */
+  if (config->stopbits2)
+    {
+      ucr2 |= UART_UCR2_STPB;
+    }
 
-/*   /\* Select even/odd parity *\/ */
+  /* Select even/odd parity */
 
-/*   if (config->parity != 0) */
-/*     { */
-/*       DEBUGASSERT(config->parity == 1 || config->parity == 2); */
-/*       ucr2 |= UART_UCR2_PREN; */
-/*       if (config->parity == 1) */
-/*         { */
-/*           ucr2 |= UART_UCR2_PROE; */
-/*         } */
-/*     } */
+  if (config->parity != 0)
+    {
+      DEBUGASSERT(config->parity == 1 || config->parity == 2);
+      ucr2 |= UART_UCR2_PREN;
+      if (config->parity == 1)
+        {
+          ucr2 |= UART_UCR2_PROE;
+        }
+    }
 
-/*   /\* Setup hardware flow control *\/ */
+  /* Setup hardware flow control */
 
-/*   regval = 0; */
+  regval = 0;
 
-/* #if 0 */
-/*   if (config->hwfc) */
-/*     { */
-/*       /\* CTS controlled by Rx FIFO *\/ */
+#if 0
+  if (config->hwfc)
+    {
+      /* CTS controlled by Rx FIFO */
 
-/*       ucr2 |= UART_UCR2_CTSC; */
+      ucr2 |= UART_UCR2_CTSC;
 
-/*       /\* Set CTS trigger level *\/ */
+      /* Set CTS trigger level */
 
-/*       regval |= 30 << UART_UCR4_CTSTL_SHIFT; */
+      regval |= 30 << UART_UCR4_CTSTL_SHIFT;
 
-/*       /\* REVISIT:  There are other relevant bits that must be managed in */
-/*        * UCR1 and UCR3. */
-/*        *\/ */
-/*     } */
-/*   else */
-/* #endif */
-/*     { */
-/*       /\* Ignore RTS *\/ */
+      /* REVISIT:  There are other relevant bits that must be managed in
+       * UCR1 and UCR3.
+       */
+    }
+  else
+#endif
+    {
+      /* Ignore RTS */
 
-/*       ucr2 |= UART_UCR2_IRTS; */
-/*     } */
+      ucr2 |= UART_UCR2_IRTS;
+    }
 
-/*   putreg32(regval, base + UART_UCR4_OFFSET); */
+  putreg32(regval, base + UART_UCR4_OFFSET);
 
-/*   /\* Setup the new UART configuration *\/ */
+  /* Setup the new UART configuration */
 
-/*   putreg32(ucr2, base + UART_UCR2_OFFSET); */
+  putreg32(ucr2, base + UART_UCR2_OFFSET);
 
-/*   /\* Select a reference clock divider. */
-/*    * REVISIT:  For now we just use a divider of 2.  That might not be */
-/*    * optimal for very high or very low baud settings. */
-/*    *\/ */
+  /* Select a reference clock divider.
+   * REVISIT:  For now we just use a divider of 2.  That might not be
+   * optimal for very high or very low baud settings.
+   */
 
-/*   div    = 2; */
-/*   refclk = (IPG_PERCLK_FREQUENCY >> 1); */
+  div    = 2;
+  refclk = (IPG_PERCLK_FREQUENCY >> 1);
 
-/*   /\* Set the baud. */
-/*    * */
-/*    *   baud    = REFFREQ / (16 * NUM/DEN) */
-/*    *   baud    = REFFREQ / 16 / RATIO */
-/*    *   RATIO   = REFREQ / 16 / baud; */
-/*    * */
-/*    *   NUM     = SCALE * RATIO */
-/*    *   DEN     = SCALE */
-/*    * */
-/*    *   UMBR    = NUM-1 */
-/*    *   UBIR    = DEN-1; */
-/*    *\/ */
+  /* Set the baud.
+   *
+   *   baud    = REFFREQ / (16 * NUM/DEN)
+   *   baud    = REFFREQ / 16 / RATIO
+   *   RATIO   = REFREQ / 16 / baud;
+   *
+   *   NUM     = SCALE * RATIO
+   *   DEN     = SCALE
+   *
+   *   UMBR    = NUM-1
+   *   UBIR    = DEN-1;
+   */
 
-/*   tmp   = ((uint64_t)refclk << (16 - 4)) / config->baud; */
-/*   DEBUGASSERT(tmp < 0x0000000100000000ll); */
-/*   ratio = (b16_t)tmp; */
+  tmp   = ((uint64_t)refclk << (16 - 4)) / config->baud;
+  DEBUGASSERT(tmp < 0x0000000100000000ll);
+  ratio = (b16_t)tmp;
 
-/*   /\* Pick a scale factor that gives us about 14 bits of accuracy. */
-/*    * REVISIT:  Why not go all the way to 16-bits? */
-/*    *\/ */
+  /* Pick a scale factor that gives us about 14 bits of accuracy.
+   * REVISIT:  Why not go all the way to 16-bits?
+   */
 
-/*   if (ratio < b16HALF) */
-/*     { */
-/*       den = (1 << 15); */
-/*       num = b16toi(ratio << 15); */
-/*       DEBUGASSERT(num > 0); */
-/*     } */
-/*   else if (ratio < b16ONE) */
-/*     { */
-/*       den = (1 << 14); */
-/*       num = b16toi(ratio << 14); */
-/*     } */
-/*   else if (ratio < itob16(2)) */
-/*     { */
-/*       den = (1 << 13); */
-/*       num = b16toi(ratio << 13); */
-/*     } */
-/*   else if (ratio < itob16(4)) */
-/*     { */
-/*       den = (1 << 12); */
-/*       num = b16toi(ratio << 12); */
-/*     } */
-/*   else if (ratio < itob16(8)) */
-/*     { */
-/*       den = (1 << 11); */
-/*       num = b16toi(ratio << 11); */
-/*     } */
-/*   else if (ratio < itob16(16)) */
-/*     { */
-/*       den = (1 << 10); */
-/*       num = b16toi(ratio << 10); */
-/*     } */
-/*   else if (ratio < itob16(32)) */
-/*     { */
-/*       den = (1 << 9); */
-/*       num = b16toi(ratio << 9); */
-/*     } */
-/*   else if (ratio < itob16(64)) */
-/*     { */
-/*       den = (1 << 8); */
-/*       num = b16toi(ratio << 8); */
-/*     } */
-/*   else if (ratio < itob16(128)) */
-/*     { */
-/*       den = (1 << 7); */
-/*       num = b16toi(ratio << 7); */
-/*     } */
-/*   else if (ratio < itob16(256)) */
-/*     { */
-/*       den = (1 << 6); */
-/*       num = b16toi(ratio << 6); */
-/*     } */
-/*   else if (ratio < itob16(512)) */
-/*     { */
-/*       den = (1 << 5); */
-/*       num = b16toi(ratio << 5); */
-/*     } */
-/*   else if (ratio < itob16(1024)) */
-/*     { */
-/*       den = (1 << 4); */
-/*       num = b16toi(ratio << 4); */
-/*     } */
-/*   else if (ratio < itob16(2048)) */
-/*     { */
-/*       den = (1 << 3); */
-/*       num = b16toi(ratio << 3); */
-/*     } */
-/*   else if (ratio < itob16(4096)) */
-/*     { */
-/*       den = (1 << 2); */
-/*       num = b16toi(ratio << 2); */
-/*     } */
-/*   else if (ratio < itob16(8192)) */
-/*     { */
-/*       den = (1 << 1); */
-/*       num = b16toi(ratio << 1); */
-/*     } */
-/*   else /\* if (ratio < itob16(16384)) *\/ */
-/*     { */
-/*       DEBUGASSERT(ratio < itob16(16384)); */
-/*       den = (1 << 0); */
-/*       num = b16toi(ratio); */
-/*     } */
+  if (ratio < b16HALF)
+    {
+      den = (1 << 15);
+      num = b16toi(ratio << 15);
+      DEBUGASSERT(num > 0);
+    }
+  else if (ratio < b16ONE)
+    {
+      den = (1 << 14);
+      num = b16toi(ratio << 14);
+    }
+  else if (ratio < itob16(2))
+    {
+      den = (1 << 13);
+      num = b16toi(ratio << 13);
+    }
+  else if (ratio < itob16(4))
+    {
+      den = (1 << 12);
+      num = b16toi(ratio << 12);
+    }
+  else if (ratio < itob16(8))
+    {
+      den = (1 << 11);
+      num = b16toi(ratio << 11);
+    }
+  else if (ratio < itob16(16))
+    {
+      den = (1 << 10);
+      num = b16toi(ratio << 10);
+    }
+  else if (ratio < itob16(32))
+    {
+      den = (1 << 9);
+      num = b16toi(ratio << 9);
+    }
+  else if (ratio < itob16(64))
+    {
+      den = (1 << 8);
+      num = b16toi(ratio << 8);
+    }
+  else if (ratio < itob16(128))
+    {
+      den = (1 << 7);
+      num = b16toi(ratio << 7);
+    }
+  else if (ratio < itob16(256))
+    {
+      den = (1 << 6);
+      num = b16toi(ratio << 6);
+    }
+  else if (ratio < itob16(512))
+    {
+      den = (1 << 5);
+      num = b16toi(ratio << 5);
+    }
+  else if (ratio < itob16(1024))
+    {
+      den = (1 << 4);
+      num = b16toi(ratio << 4);
+    }
+  else if (ratio < itob16(2048))
+    {
+      den = (1 << 3);
+      num = b16toi(ratio << 3);
+    }
+  else if (ratio < itob16(4096))
+    {
+      den = (1 << 2);
+      num = b16toi(ratio << 2);
+    }
+  else if (ratio < itob16(8192))
+    {
+      den = (1 << 1);
+      num = b16toi(ratio << 1);
+    }
+  else /* if (ratio < itob16(16384)) */
+    {
+      DEBUGASSERT(ratio < itob16(16384));
+      den = (1 << 0);
+      num = b16toi(ratio);
+    }
 
-/*   /\* Reduce if possible without losing accuracy. *\/ */
+  /* Reduce if possible without losing accuracy. */
 
-/*   while ((num & 1) == 0 && (den & 1) == 0) */
-/*     { */
-/*       num >>= 1; */
-/*       den >>= 1; */
-/*     } */
+  while ((num & 1) == 0 && (den & 1) == 0)
+    {
+      num >>= 1;
+      den >>= 1;
+    }
 
-/*   /\* The actual values are we write to the registers need to be */
-/*    * decremented by 1.  NOTE that the UBIR must be set before */
-/*    * the UBMR. */
-/*    *\/ */
+  /* The actual values are we write to the registers need to be
+   * decremented by 1.  NOTE that the UBIR must be set before
+   * the UBMR.
+   */
 
-/*   putreg32(den - 1, base + UART_UBIR_OFFSET); */
-/*   putreg32(num - 1, base + UART_UBMR_OFFSET); */
+  putreg32(den - 1, base + UART_UBIR_OFFSET);
+  putreg32(num - 1, base + UART_UBMR_OFFSET);
 
-/*   /\* Fixup the divisor, the value in the UFCR register is */
-/*    * */
-/*    *   000 = Divide input clock by 6 */
-/*    *   001 = Divide input clock by 5 */
-/*    *   010 = Divide input clock by 4 */
-/*    *   011 = Divide input clock by 3 */
-/*    *   100 = Divide input clock by 2 */
-/*    *   101 = Divide input clock by 1 */
-/*    *   110 = Divide input clock by 7 */
-/*    *\/ */
+  /* Fixup the divisor, the value in the UFCR register is
+   *
+   *   000 = Divide input clock by 6
+   *   001 = Divide input clock by 5
+   *   010 = Divide input clock by 4
+   *   011 = Divide input clock by 3
+   *   100 = Divide input clock by 2
+   *   101 = Divide input clock by 1
+   *   110 = Divide input clock by 7
+   */
 
-/*   if (div == 7) */
-/*     { */
-/*       div = 6; */
-/*     } */
-/*   else */
-/*     { */
-/*       div = 6 - div; */
-/*     } */
+  if (div == 7)
+    {
+      div = 6;
+    }
+  else
+    {
+      div = 6 - div;
+    }
 
-/*   regval = div << UART_UFCR_RFDIV_SHIFT; */
+  regval = div << UART_UFCR_RFDIV_SHIFT;
 
-/*   /\* Set the TX trigger level to interrupt when the TxFIFO has 2 or fewer */
-/*    * characters.  Set the RX trigger level to interrupt when the RxFIFO has */
-/*    * 1 character. */
-/*    *\/ */
+  /* Set the TX trigger level to interrupt when the TxFIFO has 2 or fewer
+   * characters.  Set the RX trigger level to interrupt when the RxFIFO has
+   * 1 character.
+   */
 
-/*   regval |= ((2 << UART_UFCR_TXTL_SHIFT) | (1 << UART_UFCR_RXTL_SHIFT)); */
-/*   putreg32(regval, base + UART_UFCR_OFFSET); */
+  regval |= ((2 << UART_UFCR_TXTL_SHIFT) | (1 << UART_UFCR_RXTL_SHIFT));
+  putreg32(regval, base + UART_UFCR_OFFSET);
 
-/*   /\* Selected. Selects proper input pins for serial and Infrared input */
-/*    * signal.  NOTE: In this chip, UARTs are used in MUXED mode, so that this */
-/*    * bit should always be set. */
-/*    *\/ */
+  /* Selected. Selects proper input pins for serial and Infrared input
+   * signal.  NOTE: In this chip, UARTs are used in MUXED mode, so that this
+   * bit should always be set.
+   */
 
-/*   putreg32(UART_UCR3_RXDMUXSEL, base + UART_UCR3_OFFSET); */
+  putreg32(UART_UCR3_RXDMUXSEL, base + UART_UCR3_OFFSET);
 
-/*   /\* Enable the TX and RX *\/ */
+  /* Enable the TX and RX */
 
-/*   ucr2 |= (UART_UCR2_TXEN | UART_UCR2_RXEN); */
-/*   putreg32(ucr2, base + UART_UCR2_OFFSET); */
+  ucr2 |= (UART_UCR2_TXEN | UART_UCR2_RXEN);
+  putreg32(ucr2, base + UART_UCR2_OFFSET);
 
-/*   /\* Enable the UART *\/ */
+  /* Enable the UART */
 
-/*   regval  = getreg32(base + UART_UCR1_OFFSET); */
-/*   regval |= UART_UCR1_UARTEN; */
-/*   putreg32(regval, base + UART_UCR1_OFFSET); */
-/* #endif */
+  regval  = getreg32(base + UART_UCR1_OFFSET);
+  regval |= UART_UCR1_UARTEN;
+  putreg32(regval, base + UART_UCR1_OFFSET);
+#endif
 
   return OK;
 }

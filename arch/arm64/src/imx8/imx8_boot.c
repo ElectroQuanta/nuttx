@@ -42,6 +42,7 @@
 #include "arm64_mmu.h"
 #include "imx8_boot.h"
 #include "imx8_serial.h"
+#include "imx8mn_lowputc.h"
 
 
 #if defined(CONFIG_ARCH_CHIP_IMX8_MN)
@@ -141,10 +142,15 @@ void arm64_chip_boot(void)
     
   arm64_mmu_init(true);
 
+
+  /* Do UART early initialization & pin muxing */
+//#ifdef CONFIG_IMX9_LPUART
+  imx_lowsetup();
+//#endif
+
   /* Perform board-specific device initialization. This would include
    * configuration of board specific resources such as GPIOs, LEDs, etc.
    */
-
 
   imx8_board_initialize();
 

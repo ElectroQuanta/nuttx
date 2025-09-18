@@ -33,7 +33,7 @@
  ****************************************************************************/
 
 #include <nuttx/config.h>
-#include "imx8mn_uart_memorymap.h"
+#include "imx8mn_memorymap.h"
 
 /****************************************************************************
  * Pre-processor Definitions
