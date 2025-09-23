@@ -43,7 +43,7 @@
 #include "imx8_boot.h"
 #include "imx8_serial.h"
 #include "imx8mn_lowputc.h"
-
+#include "hardware/imx-regs.h"
 
 #if defined(CONFIG_ARCH_CHIP_IMX8_MN)
 #include "hardware/imx8mn/imx8mn_memorymap.h"
@@ -55,7 +55,7 @@
 
 static const struct arm_mmu_region g_mmu_regions[] = {
 
-/* Peripheral regions, non-cacheable device memory */
+    /* Peripheral regions, non-cacheable device memory */
 
 #if defined(CONFIG_ARCH_CHIP_IMX8_QUADMAX)
     MMU_REGION_FLAT_ENTRY("DEVICE_REGION", (uint64_t)CONFIG_DEVICEIO_BASEADDR,
@@ -63,26 +63,27 @@ static const struct arm_mmu_region g_mmu_regions[] = {
                           MT_DEVICE_NGNRNE | MT_RW | MT_SECURE),
 
 #elif defined(CONFIG_ARCH_CHIP_IMX8_MN)
-  MMU_REGION_FLAT_ENTRY("AIPS1",
-						(uint64_t)IMX_AIPS1_PSECTION,
-						(uint64_t)IMX_AIPS1_SECTION_SIZE,
+  MMU_REGION_FLAT_ENTRY("DEVICE_REGION",
+						/* (uint64_t)IMX_AIPS1_PSECTION, */
+						(uint64_t)0x30000000,
+						(uint64_t)0x10000000,
 						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE),
     
-  MMU_REGION_FLAT_ENTRY("AIPS2",
-						(uint64_t)IMX_AIPS2_PSECTION,
-						(uint64_t)IMX_AIPS2_SECTION_SIZE,
-						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE),
-  MMU_REGION_FLAT_ENTRY("AIPS3",
-						(uint64_t)IMX_AIPS3_PSECTION,
-						(uint64_t)IMX_AIPS3_SECTION_SIZE,
-						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE),
-  MMU_REGION_FLAT_ENTRY("AIPS4",
-						(uint64_t)IMX_AIPS4_PSECTION,
-						(uint64_t)IMX_AIPS4_SECTION_SIZE,
-						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE),
-  /* /\* GIC Distributor + Redistributor *\/ */
-  MMU_REGION_FLAT_ENTRY("GIC", 0x38800000, 0x00100000, MT_DEVICE_NGNRNE |
-						MT_RW | MT_SECURE),
+  /* MMU_REGION_FLAT_ENTRY("AIPS2", */
+  /* 						(uint64_t)IMX_AIPS2_PSECTION, */
+  /* 						(uint64_t)IMX_AIPS2_SECTION_SIZE, */
+  /* 						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE), */
+  /* MMU_REGION_FLAT_ENTRY("AIPS3", */
+  /* 						(uint64_t)IMX_AIPS3_PSECTION, */
+  /* 						(uint64_t)IMX_AIPS3_SECTION_SIZE, */
+  /* 						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE), */
+  /* MMU_REGION_FLAT_ENTRY("AIPS4", */
+  /* 						(uint64_t)IMX_AIPS4_PSECTION, */
+  /* 						(uint64_t)IMX_AIPS4_SECTION_SIZE, */
+  /* 						MT_DEVICE_NGNRNE | MT_RW | MT_SECURE), */
+  /* /\* /\\* GIC Distributor + Redistributor *\\/ *\/ */
+  /* MMU_REGION_FLAT_ENTRY("GIC", 0x38800000, 0x00100000, MT_DEVICE_NGNRNE | */
+  /* 						MT_RW | MT_SECURE), */
 #endif
 
     /* DRAM */
@@ -138,10 +139,12 @@ void arm64_el_init(void)
 
 void arm64_chip_boot(void)
 {
-  /* MAP IO and DRAM, enable MMU. */
+    /* MAP IO and DRAM, enable MMU. */
+
+  /* volatile int dbg = 1; */
+  /* while(dbg) ; */
     
   arm64_mmu_init(true);
-
 
   /* Do UART early initialization & pin muxing */
 //#ifdef CONFIG_IMX9_LPUART

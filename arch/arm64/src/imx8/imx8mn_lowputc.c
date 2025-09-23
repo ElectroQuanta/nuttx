@@ -40,6 +40,9 @@
 #include "arm64_arch.h"
 #include "hardware/imx8mn/imx8mn_ccm.h"
 #include "hardware/imx8mn/imx8mn_iomuxc.h"
+#include "hardware/iomux-v3.h"
+#include "hardware/imx8mn/imx8mn_pins.h"
+#include "imx8_clock.h"
 #include <arch/board/board.h> /* Include last:  has dependencies */
 
 /****************************************************************************
@@ -48,33 +51,77 @@
 
 /* Configuration ************************************************************/
 
+#define UART_PAD_CTRL (PAD_CTL_DSE6 | PAD_CTL_FSEL1)
+
 #ifdef IMX_HAVE_UART_CONSOLE
 #  if defined(CONFIG_UART1_SERIAL_CONSOLE)
 #    define IMX_CONSOLE_VBASE    IMX_UART1_VBASE
 #    define IMX_CONSOLE_BAUD     CONFIG_UART1_BAUD
 #    define IMX_CONSOLE_BITS     CONFIG_UART1_BITS
 #    define IMX_CONSOLE_PARITY   CONFIG_UART1_PARITY
-#    define IMX_CONSOLE_2STOP    CONFIG_UART1_2STOP
+#define IMX_CONSOLE_2STOP CONFIG_UART1_2STOP
+#define UART_NR 1
+#define UBOOT_BOOTSTRAP // Only UART2 is configured w/out U-Boot bootstrap
+#ifdef UBOOT_BOOTSTRAP
+static iomux_v3_cfg_t const uart_pads[] = {
+    IMX8MN_PAD_UART1_RXD__UART1_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+    IMX8MN_PAD_UART1_TXD__UART1_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+#endif
 #  elif defined(CONFIG_UART2_SERIAL_CONSOLE)
 #    define IMX_CONSOLE_VBASE    IMX_UART2_VBASE
 #    define IMX_CONSOLE_BAUD     CONFIG_UART2_BAUD
 #    define IMX_CONSOLE_BITS     CONFIG_UART2_BITS
 #    define IMX_CONSOLE_PARITY   CONFIG_UART2_PARITY
-#    define IMX_CONSOLE_2STOP    CONFIG_UART2_2STOP
+# define IMX_CONSOLE_2STOP CONFIG_UART2_2STOP
+#define UART_NR 2
+#define UBOOT_BOOTSTRAP // Explicit U-Boot bootstrap
+#ifdef UBOOT_BOOTSTRAP
+static iomux_v3_cfg_t const uart_pads[] = {
+  IMX8MN_PAD_UART2_RXD__UART2_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+  IMX8MN_PAD_UART2_TXD__UART2_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+#endif
 #  elif defined(CONFIG_UART3_SERIAL_CONSOLE)
 #    define IMX_CONSOLE_VBASE    IMX_UART3_VBASE
 #    define IMX_CONSOLE_BAUD     CONFIG_UART3_BAUD
 #    define IMX_CONSOLE_BITS     CONFIG_UART3_BITS
 #    define IMX_CONSOLE_PARITY   CONFIG_UART3_PARITY
-#    define IMX_CONSOLE_2STOP    CONFIG_UART3_2STOP
+#define IMX_CONSOLE_2STOP CONFIG_UART3_2STOP
+#define UART_NR 3
+#define UBOOT_BOOTSTRAP // Only UART2 is configured w/out U-Boot bootstrap
+#ifdef UBOOT_BOOTSTRAP
+static iomux_v3_cfg_t const uart_pads[] = {
+  IMX8MN_PAD_UART3_RXD__UART3_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+  IMX8MN_PAD_UART3_TXD__UART3_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
+#endif
 #  elif defined(CONFIG_UART4_SERIAL_CONSOLE)
 #    define IMX_CONSOLE_VBASE    IMX_UART4_VBASE
 #    define IMX_CONSOLE_BAUD     CONFIG_UART4_BAUD
 #    define IMX_CONSOLE_BITS     CONFIG_UART4_BITS
 #    define IMX_CONSOLE_PARITY   CONFIG_UART4_PARITY
-#    define IMX_CONSOLE_2STOP    CONFIG_UART4_2STOP
-#  endif
+#define IMX_CONSOLE_2STOP CONFIG_UART4_2STOP
+#define UART_NR 4
+#define UBOOT_BOOTSTRAP // Only UART2 is configured w/out U-Boot bootstrap
+#ifdef UBOOT_BOOTSTRAP
+static iomux_v3_cfg_t const uart_pads[] = {
+  IMX8MN_PAD_UART4_RXD__UART4_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL),
+  IMX8MN_PAD_UART4_TXD__UART4_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL),
+};
 #endif
+#endif // CONFIG_UART4_SERIAL_CONSOLE
+#endif // IMX_HAVE_UART
+
+
+#ifdef UBOOT_BOOTSTRAP
+#define IPG_PERCLK_FREQUENCY 24000000 // UBoot uses 24 MHz clock
+#else
+#define IPG_PERCLK_FREQUENCY 80000000
+#endif
+
+
+
 
 /* Clocking *****************************************************************/
 
@@ -102,9 +149,6 @@
  * REVISIT:  This logic assumes that all dividers are at the default value
  * and that the value of the ipg_perclk is 80MHz.
  */
-
-#define IPG_PERCLK_FREQUENCY  80000000
-//#define IPG_PERCLK_FREQUENCY  66666667
 
 /* The BRM sub-block receives ref_clk (module_clock clock after divider).
  * From this clock, and with integer and non-integer division, BRM generates
@@ -146,11 +190,17 @@ void imx_lowsetup(void)
 #ifdef IMX_HAVE_UART
   /*   uint32_t regval; */
 
+#ifdef UBOOT_BOOTSTRAP
+
+  imx_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads));
+  init_uart_clk(UART_NR - 1);
+
+#else  
+
   /* Enable clocks */
   /* Set domains for CCGR and PLL and IOMUXC */
   ccm_set_mode(IMX_CCM_PLL_CTRL_PLL1_DIV10, lpmode_all);
   ccm_set_mode(IMX_CCM_CCGR_IOMUXC, lpmode_all);
-
 
 #ifdef CONFIG_IMX8_UART1
   ccm_set_mode(IMX_CCM_CCGR_UART1, lpmode_all);
@@ -158,7 +208,7 @@ void imx_lowsetup(void)
   /* Enable clock with 80 MHz frequency*/
   ccm_clk_root_enable(IMX_CCM_TARGET_ROOT_UART1, clk_sys_pll1_div10, true);
 
-  /* Configure IOMUXC for UART2 */
+  /* Configure IOMUXC for UART1 */
   iomuxc_config_mux(IMX_IOMUXC_SW_MUX_CTL_PAD_UART1_RXD,
                     IMX_IOMUXC_SW_MUX_CTL_UART1_RXD_ALT0);
   iomuxc_config_daisy(IMX_IOMUXC_UART1_RX_SELECT_INPUT,
@@ -244,6 +294,7 @@ void imx_lowsetup(void)
                     IMX_IOMUXC_SW_PAD_CTL_PAD_SR |
                         IMX_IOMUXC_SW_PAD_CTL_PAD_DSE_X4);
 #endif  
+#endif // UBOOT TEST
 
 #ifdef IMX_HAVE_UART_CONSOLE
   /* Configure the serial console for initial, non-interrupt driver mode */

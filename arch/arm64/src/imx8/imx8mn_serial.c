@@ -53,9 +53,8 @@
 #include "imx8_serial.h"
 #include "imx8_boot.h"
 #include "imx8mn_lowputc.h"
+#include "hardware/imx8mn/imx8mn_irq.h"
 
-
-#define IMX_IRQ_UART2 59
 
 // #include "arm_internal.h"
 
@@ -328,8 +327,8 @@ static struct uart_dev_s g_uart2port =
 #ifdef CONFIG_IMX8_UART3
 static struct imx_uart_s g_uart3priv =
 {
-  .uartbase       = IMX_UART3_REGISTER_BASE,
-  .baud           = IMX_UART3_VBASE,
+  .uartbase       = IMX_UART3_VBASE,
+  .baud           = CONFIG_UART3_BAUD,
   .irq            = IMX_IRQ_UART3,
   .parity         = CONFIG_UART3_PARITY,
   .lock           = SP_UNLOCKED,
@@ -357,8 +356,8 @@ static struct uart_dev_s g_uart3port =
 #ifdef CONFIG_IMX8_UART4
 static struct imx_uart_s g_uart4priv =
 {
-  .uartbase       = IMX_UART4_REGISTER_BASE,
-  .baud           = IMX_UART4_VBASE,
+  .uartbase       = IMX_UART4_VBASE,
+  .baud           = CONFIG_UART4_BAUD,
   .irq            = IMX_IRQ_UART4,
   .parity         = CONFIG_UART4_PARITY,
   .lock           = SP_UNLOCKED,

@@ -92,7 +92,7 @@
 
 #define IMX_AIPS1_PSECTION       0x30000000  /* 30000000-303fffff   4 MB Peripheral IPs via AIPS-1 */
 #define IMX_AIPS2_PSECTION       0x30400000  /* 30400000-307fffff   4 MB Peripheral IPs via AIPS-2 */
-#define IMX_AIPS3_PSECTION       0x30800000  /* 30800000-307fffff   4 MB Peripheral IPs via AIPS-3 */
+#define IMX_AIPS3_PSECTION       0x30800000  /* 30800000-30bfffff   4 MB Peripheral IPs via AIPS-3 */
 #define IMX_AIPS4_PSECTION       0x32C00000  /* 32C00000-32ffffff   4 MB Peripheral IPs via AIPS-4 */
 
 #define IMX_AIPS1_SECTION_SIZE 0x00400000 // 4 MB
