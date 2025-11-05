@@ -1,0 +1,30 @@
+ENTRY(__start)
+MEMORY
+{
+  itcm (rx) : ORIGIN = 0x00000000, LENGTH = 128K
+}
+SECTIONS
+{
+  .vectors 0x00000000 :
+  {
+    KEEP(*(.vectors))
+    KEEP(*(.isr_vector))
+  } > itcm
+  .text :
+  {
+    _stext = ABSOLUTE(.);
+    *(.text .text.*)
+    *(.rodata .rodata.*)
+    *(.glue_7 .glue_7t)
+    *(.gcc_except_table)
+    *(.gnu.linkonce.t.*)
+    _etext = ABSOLUTE(.);
+  } > itcm
+  .init_array :
+  {
+    KEEP(*(SORT(.init_array.*)))
+    KEEP(*(.init_array*))
+  } > itcm
+  _sramfuncs = 0;
+  _eramfuncs = 0;
+}

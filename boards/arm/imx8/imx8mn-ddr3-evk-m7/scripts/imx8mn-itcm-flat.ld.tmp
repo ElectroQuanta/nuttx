@@ -1,0 +1,66 @@
+OUTPUT_ARCH(arm)
+ENTRY(__start)
+MEMORY
+{
+  itcm (rwx) : ORIGIN = 0x00000000, LENGTH = 128K
+  dtcm (rwx) : ORIGIN = 0x20000000, LENGTH = 128K
+  sram (rwx) : ORIGIN = 0x00900000, LENGTH = 512K
+  flash (rx) : ORIGIN = 0xC0000000, LENGTH = 256M
+}
+SECTIONS
+{
+.itcm_image : ALIGN(4)
+{
+  __sitcm = ABSOLUTE(.);
+  KEEP(*(.vectors))
+  *(.itcm.text .itcm.text.*)
+  *(.text .text.*)
+  *(.rodata .rodata.*)
+  _eronly = ABSOLUTE(.);
+  .itcm_data_init : ALIGN(4)
+  {
+     KEEP(*(.itcm.data.init))
+  } > itcm
+  .itcm_ramfunc_init : ALIGN(4)
+  {
+     KEEP(*(.itcm.ramfunc.init))
+  } > itcm
+  .itcm_dtcm_init : ALIGN(4)
+  {
+     KEEP(*(.itcm.dtcm.init))
+  } > itcm
+  __eitcm = ABSOLUTE(.);
+} > itcm
+_ldata_load = LOADADDR(.itcm_data_init);
+_lramfuncs_load = LOADADDR(.itcm_ramfunc_init);
+_ldtcm_load = LOADADDR(.itcm_dtcm_init);
+  PROVIDE(_sdata = ORIGIN(sram));
+  PROVIDE(_edata = ORIGIN(sram) + SIZEOF(.data));
+  PROVIDE(_sramfuncs = ORIGIN(sram) + SIZEOF(.data));
+  PROVIDE(_eramfuncs = ORIGIN(sram) + SIZEOF(.data) + SIZEOF(.ramfunc));
+  PROVIDE(__sdtcm = ORIGIN(dtcm));
+  PROVIDE(__edtcm = ORIGIN(dtcm) + SIZEOF(.dtcm));
+  .bss (NOLOAD) :
+  {
+    _sbss = .;
+    *(.bss .bss.*)
+    *(COMMON)
+    . = ALIGN(4);
+    _ebss = .;
+  } > sram
+  .heap (NOLOAD) :
+  {
+    . = ALIGN(8);
+    PROVIDE(__heap_start = .);
+    . += 0x400;
+    PROVIDE(__heap_end = .);
+  } > sram
+  .stack (NOLOAD) :
+  {
+    . = ALIGN(8);
+    PROVIDE(__stack_top = .);
+    . += 0x400;
+    PROVIDE(__stack_limit = .);
+  } > sram
+  .ARM.attributes 0 : { *(.ARM.attributes) }
+}

@@ -1,0 +1,33 @@
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/core_cm7.h:2379: warning: end of file while inside a group
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/fsl_assert.h:47: warning: unbalanced grouping commands
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/fsl_clock.h:1583: warning: end of file while inside a group
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/fsl_debug_console.h:267: warning: unbalanced grouping commands
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/fsl_iomuxc.h:747: warning: end of file while inside a group
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/m-profile/armv7m_cachel1.h:440: warning: end of file while inside a group
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/m-profile/cmsis_gcc_m.h:718: warning: end of file while inside a group
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/PERI_IOMUXC.h:658: warning: end of file while inside a group
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/PERI_RDC.h:712: warning: end of file while inside a group
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/include/nuttx/nx/nxterm.h:390: warning: More #if's than #endif's found (might be in an included file).
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/PERI_IOMUXC.h:232: warning: Refusing to add group iomuxc_pads to itself
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/system_MIMX8MN6_cm7.c:36: warning: the name 'MIMX8MN6_cm7' supplied as the argument in the \file statement is not an input file
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/system_MIMX8MN6_cm7.h:36: warning: the name 'MIMX8MN6_cm7' supplied as the argument in the \file statement is not an input file
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/core_cm7.h:62: warning: Found non-existing group 'Cortex_M7' for the command '@ingroup', ignoring command
+warning: Included by graph for 'include/nuttx/arch.h' not generated, too many nodes (50), threshold is 50. Consider increasing DOT_GRAPH_MAX_NODES.
+warning: Included by graph for 'include/nuttx/irq.h' not generated, too many nodes (116), threshold is 50. Consider increasing DOT_GRAPH_MAX_NODES.
+warning: Included by graph for 'include/sys/types.h' not generated, too many nodes (176), threshold is 50. Consider increasing DOT_GRAPH_MAX_NODES.
+warning: Included by graph for 'arm_internal.h' not generated, too many nodes (54), threshold is 50. Consider increasing DOT_GRAPH_MAX_NODES.
+warning: Included by graph for 'compiler.h' not generated, too many nodes (100), threshold is 50. Consider increasing DOT_GRAPH_MAX_NODES.
+warning: Included by graph for 'config.h' not generated, too many nodes (806), threshold is 50. Consider increasing DOT_GRAPH_MAX_NODES.
+warning: Included by graph for 'nuttx/fs/ioctl.h' not generated, too many nodes (109), threshold is 50. Consider increasing DOT_GRAPH_MAX_NODES.
+warning: Included by graph for 'stdbool.h' not generated, too many nodes (182), threshold is 50. Consider increasing DOT_GRAPH_MAX_NODES.
+warning: Included by graph for 'stdint.h' not generated, too many nodes (325), threshold is 50. Consider increasing DOT_GRAPH_MAX_NODES.
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/cmsis_gcc.h:297: warning: argument 'value' of command @param is not found in the argument list of __attribute__((always_inline))
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/cmsis_gcc.h:297: warning: argument 'sat' of command @param is not found in the argument list of __attribute__((always_inline))
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/cmsis_gcc.h:297: warning: argument 'fpscr' of command @param is not found in the argument list of __attribute__((always_inline))
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/cmsis_gcc.h:297: warning: argument 'op1' of command @param is not found in the argument list of __attribute__((always_inline))
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/cmsis_gcc.h:297: warning: argument 'op2' of command @param is not found in the argument list of __attribute__((always_inline))
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/cmsis_gcc.h:854: warning: argument 'fpscr' of command @param is not found in the argument list of __attribute__((always_inline))
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/fsl_common.h:326: warning: argument delayTime_us from the argument list of SDK_DelayAtLeastUs has multiple @param documentation sections
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/fsl_common.h:326: warning: argument coreClock_Hz from the argument list of SDK_DelayAtLeastUs has multiple @param documentation sections
+warning: Group dependency graph for 'Peripheral_access_layer' not generated, too many nodes (50), threshold is 50. Consider increasing DOT_GRAPH_MAX_NODES.
+/home/zmp/OneDrive_UM/Documents/Univ/MI_Electro/Tese/PX4/nuttx-setup/nuttx/arch/arm/src/imx8/sdk/fsl_rdc.h:83: warning: unable to resolve reference to 'RDC_SEMA42_Lock' for \ref command

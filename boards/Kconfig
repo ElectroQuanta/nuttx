@@ -2421,6 +2421,16 @@ config ARCH_BOARD_IMX8MN_DDR3_EVK
 		This options selects support for NuttX on the NXP i.MX8 M Nano CPUs EVK
 		configure board with ARM Cortex-A53.
 
+config ARCH_BOARD_IMX8MN_DDR3_EVK_M7
+	bool "NXP i.MX8 M Nano CPUs DDR3 EVK M7"
+	depends on ARCH_CHIP_IMX8_CORTEX_M
+#	select ARCH_HAVE_LEDS
+#	select ARCH_HAVE_BUTTONS
+#	select ARCH_HAVE_IRQBUTTONS
+#	select ARCH_PHY_INTERRUPT
+	---help---
+		This is the board configuration for the port of NuttX to the NXP i.MX8 M Nano CPUs EVK with ARM Cortex-M7.
+
 config ARCH_BOARD_IMX93_EVK
 	bool "NXP i.MX93 CPUs EVK board"
 	depends on ARCH_CHIP_IMX93
@@ -3743,6 +3753,7 @@ config ARCH_BOARD
 	default "fvp-armv8r-aarch32"        if ARCH_BOARD_FVP_ARMV8R_AARCH32
 	default "imx8qm-mek"                if ARCH_BOARD_IMX8QM_MEK
 	default "imx8mn-ddr3-evk"           if ARCH_BOARD_IMX8MN_DDR3_EVK
+	default "imx8mn-ddr3-evk-m7"        if ARCH_BOARD_IMX8MN_DDR3_EVK_M7
 	default "imx93-evk"                 if ARCH_BOARD_IMX93_EVK
 	default "imx95-a55-evk"             if ARCH_BOARD_IMX95_A55_EVK
 	default "avaota-a1"                 if ARCH_BOARD_AVAOTA_A1
@@ -3983,6 +3994,9 @@ source "boards/arm64/imx8/imx8qm-mek/Kconfig"
 endif
 if ARCH_BOARD_IMX8MN_DDR3_EVK
 source "boards/arm64/imx8/imx8mn-ddr3-evk/Kconfig"
+endif
+if ARCH_BOARD_IMX8MN_DDR3_EVK_M7
+source "boards/arm/imx8/imx8mn-ddr3-evk-m7/Kconfig"
 endif
 if ARCH_BOARD_IMX93_EVK
 source "boards/arm64/imx9/imx93-evk/Kconfig"

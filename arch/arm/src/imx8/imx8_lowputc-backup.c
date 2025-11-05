@@ -1,0 +1,579 @@
+/****************************************************************************
+ * arch/arm/src/imx6/imx8_lowputc.c
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ ****************************************************************************/
+
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
+
+#include <nuttx/config.h>
+
+#include <stdint.h>
+#include <fixedmath.h>
+#include <assert.h>
+
+//#include "hardware/imx8_iomuxc.h"
+//#include "hardware/imx8_ccm.h"
+#include "hardware/imx8mn/imx8mn_uart.h"
+#include "imx8_config.h"
+/* #include "imx8_iomuxc.h" */
+/* #include "imx8_gpio.h" */
+#include "imx8_lowputc.h"
+#include "arm_internal.h"
+/* #include "hardware/imx8mn/imx8mn_ccm.h" */
+/* #include "hardware/imx8mn/imx8mn_iomuxc.h" */
+/* #include "hardware/iomux-v3.h" */
+/* #include "hardware/imx8mn/imx8mn_pins.h" */
+/* #include "imx8_clock.h" */
+#include <arch/board/board.h> /* Include last:  has dependencies */
+
+/****************************************************************************
+ * Pre-processor Definitions
+ ****************************************************************************/
+
+/* Configuration ************************************************************/
+
+#define UART_PAD_CTRL (PAD_CTL_DSE6 | PAD_CTL_FSEL1)
+
+#ifdef IMX8_HAVE_UART_CONSOLE
+#  if defined(CONFIG_UART1_SERIAL_CONSOLE)
+#    define IMX8_CONSOLE_VBASE    IMX8_UART1_VBASE
+#    define IMX8_CONSOLE_BAUD     CONFIG_UART1_BAUD
+#    define IMX8_CONSOLE_BITS     CONFIG_UART1_BITS
+#    define IMX8_CONSOLE_PARITY   CONFIG_UART1_PARITY
+#define IMX8_CONSOLE_2STOP CONFIG_UART1_2STOP
+#define UART_NR 1
+#define UBOOT_BOOTSTRAP // Only UART2 is configured w/out U-Boot bootstrap
+#ifdef UBOOT_BOOTSTRAP
+/* static iomux_v3_cfg_t const uart_pads[] = { */
+/*     IMX8MN_PAD_UART1_RXD__UART1_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL), */
+/*     IMX8MN_PAD_UART1_TXD__UART1_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL), */
+/* }; */
+#endif
+#  elif defined(CONFIG_UART2_SERIAL_CONSOLE)
+#    define IMX8_CONSOLE_VBASE    IMX8_UART2_VBASE
+#    define IMX8_CONSOLE_BAUD     CONFIG_UART2_BAUD
+#    define IMX8_CONSOLE_BITS     CONFIG_UART2_BITS
+#    define IMX8_CONSOLE_PARITY   CONFIG_UART2_PARITY
+# define IMX8_CONSOLE_2STOP CONFIG_UART2_2STOP
+#define UART_NR 2
+#define UBOOT_BOOTSTRAP // Explicit U-Boot bootstrap
+#ifdef UBOOT_BOOTSTRAP
+/* static iomux_v3_cfg_t const uart_pads[] = { */
+/*   IMX8MN_PAD_UART2_RXD__UART2_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL), */
+/*   IMX8MN_PAD_UART2_TXD__UART2_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL), */
+/* }; */
+#endif
+#  elif defined(CONFIG_UART3_SERIAL_CONSOLE)
+#    define IMX8_CONSOLE_VBASE    IMX8_UART3_VBASE
+#    define IMX8_CONSOLE_BAUD     CONFIG_UART3_BAUD
+#    define IMX8_CONSOLE_BITS     CONFIG_UART3_BITS
+#    define IMX8_CONSOLE_PARITY   CONFIG_UART3_PARITY
+#define IMX8_CONSOLE_2STOP CONFIG_UART3_2STOP
+#define UART_NR 3
+#define UBOOT_BOOTSTRAP // Only UART2 is configured w/out U-Boot bootstrap
+#ifdef UBOOT_BOOTSTRAP
+/* static iomux_v3_cfg_t const uart_pads[] = { */
+/*   IMX8MN_PAD_UART3_RXD__UART3_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL), */
+/*   IMX8MN_PAD_UART3_TXD__UART3_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL), */
+/* }; */
+#endif
+#  elif defined(CONFIG_UART4_SERIAL_CONSOLE)
+#    define IMX8_CONSOLE_VBASE    IMX8_UART4_VBASE
+#    define IMX8_CONSOLE_BAUD     CONFIG_UART4_BAUD
+#    define IMX8_CONSOLE_BITS     CONFIG_UART4_BITS
+#    define IMX8_CONSOLE_PARITY   CONFIG_UART4_PARITY
+#define IMX8_CONSOLE_2STOP CONFIG_UART4_2STOP
+#define UART_NR 4
+#define UBOOT_BOOTSTRAP // Only UART2 is configured w/out U-Boot bootstrap
+#ifdef UBOOT_BOOTSTRAP
+/* static iomux_v3_cfg_t const uart_pads[] = { */
+/*   IMX8MN_PAD_UART4_RXD__UART4_DCE_RX | MUX_PAD_CTRL(UART_PAD_CTRL), */
+/*   IMX8MN_PAD_UART4_TXD__UART4_DCE_TX | MUX_PAD_CTRL(UART_PAD_CTRL), */
+/* }; */
+#endif
+#endif // CONFIG_UART4_SERIAL_CONSOLE
+#endif // IMX8_HAVE_UART
+
+
+#ifdef UBOOT_BOOTSTRAP
+#define IPG_PERCLK_FREQUENCY 24000000 // UBoot uses 24 MHz clock
+#else
+#define IPG_PERCLK_FREQUENCY 80000000
+#endif
+
+
+
+
+/* Clocking *****************************************************************/
+
+/* the UART module receives two clocks, a peripheral_clock (ipg_clk) and the
+ * module_clock (ipg_perclk).   The peripheral_clock is used as write clock
+ * of the TxFIFO, read clock of the RxFIFO and synchronization of the modem
+ * control input pins. It must always be running when UART is enabled.
+ *
+ * The default ipg_clk is 66MHz (max 66.5MHz).  ipg_clk is gated by
+ * CCGR5[CG12], uart_clk_enable.  ipg_clk is shared among many modules and
+ * should not be controlled by the UART logic.
+ *
+ * The module_clock is for all the state machines, writing RxFIFO, reading
+ * TxFIFO, etc.  It must always be running when UART is sending or receiving
+ * characters.  This clock is used in order to allow frequency scaling on
+ * peripheral_clock without changing configuration of baud rate.
+ *
+ * The default ipg_perclk is 80MHz (max 80MHz).  ipg_perclk is gated by
+ * CCGR5[CG13], uart_serial_clk_enable.  The clock generation sequence is:
+ *
+ *   pll3_sw_clk (480M) -> CCGR5[CG13] -> 3 bit divider cg podf=6 ->
+ *     PLL3_80M (80Mhz) -> CDCDR1: uart_clk_podf ->
+ *       6 bit divider default=1 -> UART_CLK_ROOT
+ *
+ * REVISIT:  This logic assumes that all dividers are at the default value
+ * and that the value of the ipg_perclk is 80MHz.
+ */
+
+/* The BRM sub-block receives ref_clk (module_clock clock after divider).
+ * From this clock, and with integer and non-integer division, BRM generates
+ * a 16x baud rate clock.
+ */
+
+/****************************************************************************
+ * Private Data
+ ****************************************************************************/
+
+#ifdef IMX8_HAVE_UART_CONSOLE
+static const struct uart_config_s g_console_config =
+{
+  .baud      = IMX8_CONSOLE_BAUD,    /* Configured baud */
+  .parity    = IMX8_CONSOLE_PARITY,  /* 0=none, 1=odd, 2=even */
+  .bits      = IMX8_CONSOLE_BITS,    /* Number of bits (5-9) */
+  .stopbits2 = IMX8_CONSOLE_2STOP,   /* true: Configure with 2 stop bits instead of 1 */
+};
+#endif
+
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Name: imx8_lowsetup
+ *
+ * Description:
+ *   Called at the very beginning of _start.  Performs low level
+ *   initialization including setup of the console UART.  This UART done
+ *   early so that the serial console is available for debugging very early
+ *   in the boot sequence.
+ *
+ ****************************************************************************/
+
+void imx8_lowsetup(void)
+{
+#ifndef CONFIG_SUPPRESS_UART_CONFIG
+#ifdef IMX8_HAVE_UART
+  /*   uint32_t regval; */
+
+/* #ifdef UBOOT_BOOTSTRAP */
+
+/*   imx8_iomux_v3_setup_multiple_pads(uart_pads, ARRAY_SIZE(uart_pads)); */
+/*   init_uart_clk(UART_NR - 1); */
+
+/* #else   */
+
+/*   /\* Enable clocks *\/ */
+/*   /\* Set domains for CCGR and PLL and IOMUXC *\/ */
+/*   ccm_set_mode(IMX8_CCM_PLL_CTRL_PLL1_DIV10, lpmode_all); */
+/*   ccm_set_mode(IMX8_CCM_CCGR_IOMUXC, lpmode_all); */
+/* # endif */
+
+/* #ifdef CONFIG_IMX8_UART4 */
+/*   ccm_set_mode(IMX8_CCM_CCGR_UART4, lpmode_all); */
+
+/*   /\* Enable clock with 80 MHz frequency*\/ */
+/*   ccm_clk_root_enable(IMX8_CCM_TARGET_ROOT_UART4, clk_sys_pll1_div10, true); */
+
+/*   /\* Configure IOMUXC for UART2 *\/ */
+/*   iomuxc_config_mux(IMX8_IOMUXC_SW_MUX_CTL_PAD_UART4_RXD, */
+/*                     IMX8_IOMUXC_SW_MUX_CTL_UART4_RXD_ALT0); */
+/*   iomuxc_config_daisy(IMX8_IOMUXC_UART4_RX_SELECT_INPUT, */
+/*                       IMX8_IOMUXC_UART4_RX_DAISY_ALT0); */
+/*   iomuxc_config_pad(IMX8_IOMUXC_SW_PAD_CTL_PAD_UART4_RXD, */
+/*                     IMX8_IOMUXC_SW_PAD_CTL_PAD_PE | */
+/*                     IMX8_IOMUXC_SW_PAD_CTL_PAD_IS | */
+/*                     IMX8_IOMUXC_SW_PAD_CTL_PAD_PUE | */
+/*                     IMX8_IOMUXC_SW_PAD_CTL_PAD_SR */
+/* 					); */
+/*   iomuxc_config_mux(IMX8_IOMUXC_SW_MUX_CTL_PAD_UART4_TXD, */
+/*                     IMX8_IOMUXC_SW_MUX_CTL_UART4_TXD_ALT0); */
+/*   iomuxc_config_pad(IMX8_IOMUXC_SW_PAD_CTL_PAD_UART4_TXD, */
+/*                     IMX8_IOMUXC_SW_PAD_CTL_PAD_SR | */
+/*                         IMX8_IOMUXC_SW_PAD_CTL_PAD_DSE_X4); */
+/* #endif   */
+/* #endif // UBOOT TEST */
+
+#ifdef IMX8_HAVE_UART_CONSOLE
+  /* Configure the serial console for initial, non-interrupt driver mode */
+
+  imx8_uart_configure(IMX8_CONSOLE_VBASE, &g_console_config);
+#endif
+#endif /* IMX8_HAVE_UART */
+#endif /* CONFIG_SUPPRESS_UART_CONFIG */
+}
+
+/****************************************************************************
+ * Name: imx8_uart_configure
+ *
+ * Description:
+ *   Configure a UART for non-interrupt driven operation
+ *
+ ****************************************************************************/
+
+#ifdef IMX8_HAVE_UART
+int imx8_uart_configure(uint32_t base, const struct uart_config_s *config)
+{
+/* #ifndef CONFIG_SUPPRESS_UART_CONFIG */
+/*   uint64_t tmp; */
+/*   uint32_t regval; */
+/*   uint32_t ucr2; */
+/*   uint32_t refclk; */
+/*   uint32_t div; */
+/*   uint32_t num; */
+/*   uint32_t den; */
+/*   b16_t ratio; */
+
+/*   /\* Disable the UART *\/ */
+
+/*   putreg32(0, base + UART_UCR1_OFFSET); */
+/*   putreg32(0, base + UART_UCR2_OFFSET); */
+/*   putreg32(0, base + UART_UCR3_OFFSET); */
+/*   putreg32(0, base + UART_UCR4_OFFSET); */
+
+/*   /\* Wait for the UART to come out of reset *\/ */
+
+/*   while ((getreg32(base + UART_UCR2_OFFSET) & UART_UCR2_SRST) == 0); */
+
+/*   /\* Set up UCR2, Clearing all bits that will be configured below. *\/ */
+
+/*   ucr2  = getreg32(base + UART_UCR2_OFFSET); */
+/*   ucr2 &= ~(UART_UCR2_WS   | UART_UCR2_STPB | UART_UCR2_PREN | */
+/*             UART_UCR2_PROE | UART_UCR2_IRTS | UART_UCR2_CTSC); */
+
+/*   /\* Select the number of data bits *\/ */
+
+/*   DEBUGASSERT(config->bits == 7 || config->bits == 8); */
+/*   if (config->bits == 8) */
+/*     { */
+/*       ucr2 |= UART_UCR2_WS; */
+/*     } */
+
+/*   /\* Select the number of stop bits *\/ */
+
+/*   if (config->stopbits2) */
+/*     { */
+/*       ucr2 |= UART_UCR2_STPB; */
+/*     } */
+
+/*   /\* Select even/odd parity *\/ */
+
+/*   if (config->parity != 0) */
+/*     { */
+/*       DEBUGASSERT(config->parity == 1 || config->parity == 2); */
+/*       ucr2 |= UART_UCR2_PREN; */
+/*       if (config->parity == 1) */
+/*         { */
+/*           ucr2 |= UART_UCR2_PROE; */
+/*         } */
+/*     } */
+
+/*   /\* Setup hardware flow control *\/ */
+
+/*   regval = 0; */
+
+/* #if 0 */
+/*   if (config->hwfc) */
+/*     { */
+/*       /\* CTS controlled by Rx FIFO *\/ */
+
+/*       ucr2 |= UART_UCR2_CTSC; */
+
+/*       /\* Set CTS trigger level *\/ */
+
+/*       regval |= 30 << UART_UCR4_CTSTL_SHIFT; */
+
+/*       /\* REVISIT:  There are other relevant bits that must be managed in */
+/*        * UCR1 and UCR3. */
+/*        *\/ */
+/*     } */
+/*   else */
+/* #endif */
+/*     { */
+/*       /\* Ignore RTS *\/ */
+
+/*       ucr2 |= UART_UCR2_IRTS; */
+/*     } */
+
+/*   putreg32(regval, base + UART_UCR4_OFFSET); */
+
+/*   /\* Setup the new UART configuration *\/ */
+
+/*   putreg32(ucr2, base + UART_UCR2_OFFSET); */
+
+/*   /\* Select a reference clock divider. */
+/*    * REVISIT:  For now we just use a divider of 2.  That might not be */
+/*    * optimal for very high or very low baud settings. */
+/*    *\/ */
+
+/*   div    = 2; */
+/*   refclk = (IPG_PERCLK_FREQUENCY >> 1); */
+
+/*   /\* Set the baud. */
+/*    * */
+/*    *   baud    = REFFREQ / (16 * NUM/DEN) */
+/*    *   baud    = REFFREQ / 16 / RATIO */
+/*    *   RATIO   = REFREQ / 16 / baud; */
+/*    * */
+/*    *   NUM     = SCALE * RATIO */
+/*    *   DEN     = SCALE */
+/*    * */
+/*    *   UMBR    = NUM-1 */
+/*    *   UBIR    = DEN-1; */
+/*    *\/ */
+
+/*   tmp   = ((uint64_t)refclk << (16 - 4)) / config->baud; */
+/*   DEBUGASSERT(tmp < 0x0000000100000000ll); */
+/*   ratio = (b16_t)tmp; */
+
+/*   /\* Pick a scale factor that gives us about 14 bits of accuracy. */
+/*    * REVISIT:  Why not go all the way to 16-bits? */
+/*    *\/ */
+
+/*   if (ratio < b16HALF) */
+/*     { */
+/*       den = (1 << 15); */
+/*       num = b16toi(ratio << 15); */
+/*       DEBUGASSERT(num > 0); */
+/*     } */
+/*   else if (ratio < b16ONE) */
+/*     { */
+/*       den = (1 << 14); */
+/*       num = b16toi(ratio << 14); */
+/*     } */
+/*   else if (ratio < itob16(2)) */
+/*     { */
+/*       den = (1 << 13); */
+/*       num = b16toi(ratio << 13); */
+/*     } */
+/*   else if (ratio < itob16(4)) */
+/*     { */
+/*       den = (1 << 12); */
+/*       num = b16toi(ratio << 12); */
+/*     } */
+/*   else if (ratio < itob16(8)) */
+/*     { */
+/*       den = (1 << 11); */
+/*       num = b16toi(ratio << 11); */
+/*     } */
+/*   else if (ratio < itob16(16)) */
+/*     { */
+/*       den = (1 << 10); */
+/*       num = b16toi(ratio << 10); */
+/*     } */
+/*   else if (ratio < itob16(32)) */
+/*     { */
+/*       den = (1 << 9); */
+/*       num = b16toi(ratio << 9); */
+/*     } */
+/*   else if (ratio < itob16(64)) */
+/*     { */
+/*       den = (1 << 8); */
+/*       num = b16toi(ratio << 8); */
+/*     } */
+/*   else if (ratio < itob16(128)) */
+/*     { */
+/*       den = (1 << 7); */
+/*       num = b16toi(ratio << 7); */
+/*     } */
+/*   else if (ratio < itob16(256)) */
+/*     { */
+/*       den = (1 << 6); */
+/*       num = b16toi(ratio << 6); */
+/*     } */
+/*   else if (ratio < itob16(512)) */
+/*     { */
+/*       den = (1 << 5); */
+/*       num = b16toi(ratio << 5); */
+/*     } */
+/*   else if (ratio < itob16(1024)) */
+/*     { */
+/*       den = (1 << 4); */
+/*       num = b16toi(ratio << 4); */
+/*     } */
+/*   else if (ratio < itob16(2048)) */
+/*     { */
+/*       den = (1 << 3); */
+/*       num = b16toi(ratio << 3); */
+/*     } */
+/*   else if (ratio < itob16(4096)) */
+/*     { */
+/*       den = (1 << 2); */
+/*       num = b16toi(ratio << 2); */
+/*     } */
+/*   else if (ratio < itob16(8192)) */
+/*     { */
+/*       den = (1 << 1); */
+/*       num = b16toi(ratio << 1); */
+/*     } */
+/*   else /\* if (ratio < itob16(16384)) *\/ */
+/*     { */
+/*       DEBUGASSERT(ratio < itob16(16384)); */
+/*       den = (1 << 0); */
+/*       num = b16toi(ratio); */
+/*     } */
+
+/*   /\* Reduce if possible without losing accuracy. *\/ */
+
+/*   while ((num & 1) == 0 && (den & 1) == 0) */
+/*     { */
+/*       num >>= 1; */
+/*       den >>= 1; */
+/*     } */
+
+/*   /\* The actual values are we write to the registers need to be */
+/*    * decremented by 1.  NOTE that the UBIR must be set before */
+/*    * the UBMR. */
+/*    *\/ */
+
+/*   putreg32(den - 1, base + UART_UBIR_OFFSET); */
+/*   putreg32(num - 1, base + UART_UBMR_OFFSET); */
+
+/*   /\* Fixup the divisor, the value in the UFCR register is */
+/*    * */
+/*    *   000 = Divide input clock by 6 */
+/*    *   001 = Divide input clock by 5 */
+/*    *   010 = Divide input clock by 4 */
+/*    *   011 = Divide input clock by 3 */
+/*    *   100 = Divide input clock by 2 */
+/*    *   101 = Divide input clock by 1 */
+/*    *   110 = Divide input clock by 7 */
+/*    *\/ */
+
+/*   if (div == 7) */
+/*     { */
+/*       div = 6; */
+/*     } */
+/*   else */
+/*     { */
+/*       div = 6 - div; */
+/*     } */
+
+/*   regval = div << UART_UFCR_RFDIV_SHIFT; */
+
+/*   /\* Set the TX trigger level to interrupt when the TxFIFO has 2 or fewer */
+/*    * characters.  Set the RX trigger level to interrupt when the RxFIFO has */
+/*    * 1 character. */
+/*    *\/ */
+
+/*   regval |= ((2 << UART_UFCR_TXTL_SHIFT) | (1 << UART_UFCR_RXTL_SHIFT)); */
+/*   putreg32(regval, base + UART_UFCR_OFFSET); */
+
+/*   /\* Selected. Selects proper input pins for serial and Infrared input */
+/*    * signal.  NOTE: In this chip, UARTs are used in MUXED mode, so that this */
+/*    * bit should always be set. */
+/*    *\/ */
+
+/*   putreg32(UART_UCR3_RXDMUXSEL, base + UART_UCR3_OFFSET); */
+
+/*   /\* Enable the TX and RX *\/ */
+
+/*   ucr2 |= (UART_UCR2_TXEN | UART_UCR2_RXEN); */
+/*   putreg32(ucr2, base + UART_UCR2_OFFSET); */
+
+/*   /\* Enable the UART *\/ */
+
+/*   regval  = getreg32(base + UART_UCR1_OFFSET); */
+/*   regval |= UART_UCR1_UARTEN; */
+/*   putreg32(regval, base + UART_UCR1_OFFSET); */
+/* #endif */
+
+  return OK;
+}
+#endif /* IMX8_HAVE_UART */
+
+/****************************************************************************
+ * Name: arm64_lowputc
+ *
+ * Description:
+ *   Output a byte with as few system dependencies as possible.  This will
+ *   even work BEFORE the console is initialized if we are booting from
+ *   U-Boot (and the same UART is used for the console, of course.)
+ *
+ ****************************************************************************/
+
+#ifdef IMX8_HAVE_UART
+void imx8_lowputc(int ch)
+/* void arm64_lowputc(char ch) */
+{
+  /* Poll the TX fifo trigger level bit of the UART status register. When the
+   * TXFE bit is non-zero, the TX Buffer FIFO is empty.
+   */
+
+  while ((getreg32(IMX8_CONSOLE_VBASE + UART_USR2_OFFSET) &
+          UART_USR2_TXFE) == 0);
+
+  /* If the character to output is a newline, then prepend a carriage
+   * return.
+   */
+
+  if (ch == '\n') {
+	
+      /* Send the carriage return by writing it into the UART_TXD register. */
+
+      putreg32((uint32_t)'\r', IMX8_CONSOLE_VBASE + UART_TXD_OFFSET);
+
+      /* Wait for the transmit register to be emptied. When the TXFE bit is
+       * non-zero, the TX Buffer FIFO is empty.
+       */
+
+	  while ((getreg32(IMX8_CONSOLE_VBASE + UART_USR2_OFFSET) &
+			  UART_USR2_TXFE) == 0);
+  }
+
+  /* Send the character by writing it into the UART_TXD register. */
+
+  putreg32((uint32_t)ch, IMX8_CONSOLE_VBASE + UART_TXD_OFFSET);
+}
+#endif
+
+
+
+/****************************************************************************
+ * Name: arm64_earlyprintinit
+ *
+ * Description:
+ *   Configure UART for non-interrupt driven operation
+ *
+ ****************************************************************************/
+
+#ifdef IMX8_HAVE_UART
+void imx8_earlyprintinit(char ch)
+{
+  /* Assume bootloader has already set up the UART */
+}
+#endif

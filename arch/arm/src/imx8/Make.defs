@@ -1,0 +1,47 @@
+############################################################################
+# arch/arm/src/imx8/Make.defs
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+############################################################################
+
+# Common ARM and Cortex-M7 files
+
+include armv7-m/Make.defs
+
+# Required i.MX RT files
+
+CFLAGS += -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16
+ASFLAGS += -mthumb -mcpu=cortex-m7
+
+CFLAGS += -ffunction-sections -fdata-sections -g -Og
+CFLAGS += -fno-instrument-functions
+LDFLAGS += --gc-sections
+
+#CHIP_CSRCS  = imx8_start.c imx8_lowputc.c imx8_serial.c
+#CHIP_CSRCS  = imx8_start.c imx8_clockconfig.c imx8_boardinit.c
+CHIP_CSRCS  = imx8_start.c imx8_clockconfig.c imx8_boardinit.c
+CHIP_CSRCS += fsl_rdc.c fsl_clock.c pin_mux.c
+CHIP_CSRCS += fsl_debug_console.c fsl_adapter_iuart.c fsl_uart.c
+CHIP_CSRCS += system_cm7.c
+CHIP_CSRCS += imx8_lowputc.c imx8_port_stubs.c imx8_rdc.c
+
+# CHIP_CSRCS  = imxrt_allocateheap.c imxrt_start.c imxrt_periphclks.c
+# CHIP_CSRCS += imxrt_irq.c imxrt_clrpend.c imxrt_gpio.c
+# CHIP_CSRCS += imxrt_daisy.c imxrt_wdog.c imxrt_serial.c
+# CHIP_CSRCS += imxrt_xbar.c imxrt_ocotp.c imxrt_lowputc.c

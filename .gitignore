@@ -89,3 +89,4 @@ SAVEconfig
 imx9-norimage.img
 config.txt
 debug/
+docs/

@@ -1,0 +1,53 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+#if ARCH_CHIP_IMX8_CORTEX_M
+
+menu "i.MX8 Chip Selection"
+
+choice
+	prompt "i.MX8 Core Configuration"
+	default ARCH_CHIP_IMX8_MN_M7
+
+config ARCH_CHIP_IMX8_MN_M7
+       bool "i.MX8M Nano Application Processor with Cortex-M7"
+       select ARMV7M_HAVE_ICACHE
+       select ARMV7M_HAVE_DCACHE
+       select ARMV7M_HAVE_ITCM
+       select ARMV7M_HAVE_DTCM
+
+endchoice # i.MX8 Chip Selection
+
+endmenu # "i.MX8 Chip Selection"
+
+menu "i.MX8 Peripheral Selection"
+
+config IMX8_UART1
+	bool "UART1"
+	default n
+	select UART1_SERIALDRIVER
+	select ARCH_HAVE_SERIAL_TERMIOS
+
+config IMX8_UART2
+	bool "UART2"
+	default n
+	select UART2_SERIALDRIVER
+	select ARCH_HAVE_SERIAL_TERMIOS
+
+config IMX8_UART3
+	bool "UART3"
+	default n
+	select UART3_SERIALDRIVER
+	select ARCH_HAVE_SERIAL_TERMIOS
+
+config IMX8_UART4
+	bool "UART4"
+	default n
+	select UART4_SERIALDRIVER
+	select ARCH_HAVE_SERIAL_TERMIOS
+
+endmenu # iMX Peripheral Selection
+
+#endif # ARCH_CHIP_IMX8_CORTEX_M
