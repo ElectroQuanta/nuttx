@@ -1,5 +1,5 @@
 #include <nuttx/config.h>
-#include "imx8_boardinit.h"
+#include "imx8_boardinit_sdk.h"
 #include "sdk/fsl_common.h"
 #include "sdk/fsl_debug_console.h"
 #include "sdk/fsl_rdc.h"

@@ -33,9 +33,7 @@ CFLAGS += -ffunction-sections -fdata-sections -g -Og
 CFLAGS += -fno-instrument-functions
 LDFLAGS += --gc-sections
 
-#CHIP_CSRCS  = imx8_start.c imx8_lowputc.c imx8_serial.c
-#CHIP_CSRCS  = imx8_start.c imx8_clockconfig.c imx8_boardinit.c
-CHIP_CSRCS  = imx8_start.c imx8_clockconfig.c imx8_boardinit.c
+CHIP_CSRCS  = imx8_start.c imx8_clockconfig.c imx8_boardinit_sdk.c
 CHIP_CSRCS += fsl_rdc.c fsl_clock.c pin_mux.c
 CHIP_CSRCS += fsl_debug_console.c fsl_adapter_iuart.c fsl_uart.c
 CHIP_CSRCS += system_cm7.c
