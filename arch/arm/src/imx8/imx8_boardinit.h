@@ -57,8 +57,5 @@ void BOARD_RdcInit(void);
 void BOARD_InitBootPins(void);
 void BOARD_BootClockRUN(void);
 
-/** ========= Port ===================*/
-void imx8_init_mem(void);
-
 
 #endif /* __ARCH_ARM_SRC_IMX8_IMX8_BOARDINIT_H */

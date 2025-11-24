@@ -11,6 +11,7 @@
 /* #include "sdk/core_cm7.h" */
 #include "hardware/imx8mn/imx8mn_uart.h"
 #include "arm_internal.h"
+#include "syslog.h"
 
 /* Use RAM start/size from defconfig if provided; otherwise adapt.
  * Prefer using linker symbols if you have them (see notes below).
@@ -26,10 +27,28 @@
 //#define IMX_CONSOLE_VBASE IMX8_UART4_VBASE
 #define IMX_CONSOLE_VBASE IMX8_UART2_VBASE
 
-/* Top-of-idle-stack used by up_allocate_heap */
-const uintptr_t g_idle_topstack =
-    (uintptr_t)(CONFIG_RAM_START + CONFIG_RAM_SIZE);
+extern uint8_t _estack_idle[];
 
+/* Top-of-idle-stack used by up_allocate_heap */
+/* const uintptr_t g_idle_topstack = */
+/*     (uintptr_t)&_ebss + CONFIG_IDLETHREAD_STACKSIZE; */
+const uintptr_t g_idle_topstack = (uintptr_t)_estack_idle;
+
+void up_allocate_heap(void **heap_start, size_t *heap_size)
+{
+  uintptr_t top = ((uintptr_t)_estack_idle + 7) & ~((uintptr_t)7);
+  uintptr_t end = (uintptr_t)CONFIG_RAM_START + CONFIG_RAM_SIZE;
+
+  *heap_start = (void *)top;
+  *heap_size  = (size_t)(end - top);
+
+  /* Log (pointer args cast to void* for %p) */
+  syslog(LOG_INFO,
+         "heap: start=%p size=%u end=%p\n",
+         (void *)*heap_start,
+         (unsigned)*heap_size,
+         (void *)((uintptr_t)*heap_start + *heap_size));
+}
 
 /* IRQ control (NVIC wrappers) - TODO: call CMSIS NVIC_EnableIRQ / NVIC_DisableIRQ */
 void up_enable_irq(int irq)
@@ -128,12 +147,12 @@ static void uart4_putc_polled(char ch) {
 }
 
 /* NuttX expects up_lowputc() for very early prints */
-void up_lowputc(int ch)
-{
-  if (ch == '\n') up_lowputc('\r');
+/* void up_lowputc(int ch) */
+/* { */
+/*   if (ch == '\n') up_lowputc('\r'); */
 
-  uart4_putc_polled((char)ch);
-}
+/*   uart4_putc_polled((char)ch); */
+/* } */
 
 /* up_nputs is usually provided by libarch, but if any reference exists
  * you can leave it to libarch; otherwise it's fine.

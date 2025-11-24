@@ -8,6 +8,8 @@
  *   flash : 0xC0000000 (256M)  (QSPI)
  */
 
+#include <nuttx/config.h>
+
 OUTPUT_ARCH(arm)
 ENTRY(__start)
 
@@ -23,12 +25,12 @@ EXTERN(_vectors)
 
 SECTIONS
 {
-.interrupts :
-{
-_stext = ABSOLUTE(.);
-*(.vectors)
-. = ALIGN(4);
-} > itcm
+	.interrupts :
+	{
+	_stext = ABSOLUTE(.);
+	*(.vectors)
+	. = ALIGN(128);
+	} > itcm
 
     .text :
     {
@@ -44,7 +46,7 @@ _stext = ABSOLUTE(.);
         *(.got)
         *(.gcc_except_table)
         *(.gnu.linkonce.r.*)
-		. = ALIGN(4);
+		. = ALIGN(8);
         _etext = ABSOLUTE(.);
     } > itcm
 
@@ -77,7 +79,7 @@ _stext = ABSOLUTE(.);
         *(.data .data.*)
         *(.gnu.linkonce.d.*)
         CONSTRUCTORS
-        . = ALIGN(4);
+        . = ALIGN(8);
         _edata = ABSOLUTE(.);
     } > dtcm 
 
@@ -87,9 +89,18 @@ _stext = ABSOLUTE(.);
         *(.bss .bss.*)
         *(.gnu.linkonce.b.*)
         *(COMMON)
-        . = ALIGN(4);
+        . = ALIGN(8);
         _ebss = ABSOLUTE(.);
     } > dtcm
+
+	/* Idle stack lives in DTCM; NOLOAD so it isn't zero-filled by the loader */
+	.idle_stack (NOLOAD) : ALIGN(8)
+	{
+	_sstack_idle = .;                         /* low address (stack grows down) */
+	. = . + CONFIG_IDLETHREAD_STACKSIZE;      /* e.g., 4096 */
+	. = ALIGN(8);
+	_estack_idle = .;                         /* top of idle stack */
+	} > dtcm
 
     /* Stabs debugging sections. */
 
