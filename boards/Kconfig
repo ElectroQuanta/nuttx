@@ -3291,6 +3291,16 @@ config ARCH_BOARD_VERDIN_MX8MP
 	---help---
 		Toradex Verdin i.MX8MP
 
+
+config ARCH_BOARD_MX8MN_DDR3L_EVK
+	bool "i.MX8MN DDR3L EVK"
+	depends on ARCH_CHIP_MX8MN
+	select ARCH_HAVE_LEDS
+	select ARCH_HAVE_BUTTONS
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		i.MX8MN DDR3L EVK
+
 config ARCH_BOARD_Z16F2800100ZCOG
 	bool "Zilog Z16F2800100ZCOG Development Kit"
 	depends on ARCH_CHIP_Z16F2811
@@ -3845,6 +3855,7 @@ config ARCH_BOARD
 	default "xmc4700-relax"             if ARCH_BOARD_XMC4700RELAX
 	default "xmc4800-relax"             if ARCH_BOARD_XMC4800RELAX
 	default "verdin-mx8mp"              if ARCH_BOARD_VERDIN_MX8MP
+	default "mx8mn-ddr3l-evk"           if ARCH_BOARD_MX8MN_DDR3L_EVK
 	default "z16f2800100zcog"           if ARCH_BOARD_Z16F2800100ZCOG
 	default "z20x"                      if ARCH_BOARD_Z20X
 	default "z80sim"                    if ARCH_BOARD_Z80SIM
@@ -4669,6 +4680,9 @@ source "boards/arm/xmc4/xmc4800-relax/Kconfig"
 endif
 if ARCH_BOARD_VERDIN_MX8MP
 source "boards/arm/mx8mp/verdin-mx8mp/Kconfig"
+endif
+if ARCH_BOARD_MX8MN_DDR3L_EVK
+source "boards/arm/mx8mn/mx8mn-ddr3l-evk/Kconfig"
 endif
 if ARCH_BOARD_AVR32DEV1
 source "boards/avr/at32uc3/avr32dev1/Kconfig"
