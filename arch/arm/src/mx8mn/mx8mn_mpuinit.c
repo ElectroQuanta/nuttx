@@ -116,7 +116,8 @@ void mx8mn_mpu_initialize(void)
    * Normal type, not shareable, cacheable
    */
 
-  mpu_configure_region(0x40000000, 1 * 1024 * 1024 * 1024,
+  /* mpu_configure_region(0x40000000, 1 * 1024 * 1024 * 1024, */
+  mpu_configure_region(0x60000000, 256 * 1024 * 1024,
                       MPU_RASR_TEX_NOR  |  /* Normal */
                       MPU_RASR_C        |  /* Cacheable  */
                       MPU_RASR_B        |  /* Bufferable

@@ -79,8 +79,8 @@ void mx8mn_clockconfig(void)
 
   /* Enable Audio clock to power on the audiomix domain */
 
-  mx8mn_ccm_gate_clock(CCM_AUDIO_CLK_GATE, CLK_ALWAYS_NEEDED);
-  mx8mn_ccm_enable_clock(AUDIO_AXI_CLK_ROOT);
+  /* mx8mn_ccm_gate_clock(CCM_AUDIO_CLK_GATE, CLK_ALWAYS_NEEDED); */
+  /* mx8mn_ccm_enable_clock(AUDIO_AXI_CLK_ROOT); */
 
   /* Make sure the M7 core could work normally when A53 core
    * enters the low power status.
@@ -108,46 +108,46 @@ void mx8mn_clockconfig(void)
 
   /* Power up the audiomix domain by M7 core. */
 
-  /* Map the audiomix domain to M7 */
+  /* /\* Map the audiomix domain to M7 *\/ */
 
-  modreg32(AUDIOMIX_DOMAIN,
-           AUDIOMIX_DOMAIN,
-           GPC_PGC_CPU_M7_MAPPING);
+  /* modreg32(AUDIOMIX_DOMAIN, */
+  /*          AUDIOMIX_DOMAIN, */
+  /*          GPC_PGC_CPU_M7_MAPPING); */
 
-  /* Software request to trigger power up the domain */
+  /* /\* Software request to trigger power up the domain *\/ */
 
-  modreg32(AUDIOMIX_SW_PUP_REQ,
-           AUDIOMIX_SW_PUP_REQ,
-           GPC_PU_PGC_SW_PUP_REQ);
+  /* modreg32(AUDIOMIX_SW_PUP_REQ, */
+  /*          AUDIOMIX_SW_PUP_REQ, */
+  /*          GPC_PU_PGC_SW_PUP_REQ); */
 
-  /* Waiting the AUDIOMIX_SW_PUP_REQ bit to self-cleared after power up */
+  /* /\* Waiting the AUDIOMIX_SW_PUP_REQ bit to self-cleared after power up *\/ */
 
-  while (getreg32(GPC_PU_PGC_SW_PUP_REQ) & AUDIOMIX_SW_PUP_REQ);
+  /* while (getreg32(GPC_PU_PGC_SW_PUP_REQ) & AUDIOMIX_SW_PUP_REQ); */
 
-  /* Do the handshake to make sure the NOC bus ready after
-   * power up the AUDIOMIX domain.
-   */
+  /* /\* Do the handshake to make sure the NOC bus ready after */
+  /*  * power up the AUDIOMIX domain. */
+  /*  *\/ */
 
-  modreg32(GPC_AUDIOMIX_NOC_PWRDNREQN,
-           GPC_AUDIOMIX_NOC_PWRDNREQN,
-           GPC_PU_PWRHSK);
-  while (!(getreg32(GPC_PU_PWRHSK) & GPC_AUDIOMIX_PWRDNACKN));
+  /* modreg32(GPC_AUDIOMIX_NOC_PWRDNREQN, */
+  /*          GPC_AUDIOMIX_NOC_PWRDNREQN, */
+  /*          GPC_PU_PWRHSK); */
+  /* while (!(getreg32(GPC_PU_PWRHSK) & GPC_AUDIOMIX_PWRDNACKN)); */
 
-  /* Init Audio PLL and buses */
+  /* /\* Init Audio PLL and buses *\/ */
 
-  /* AUDIO PLL1 to 393.216 MHz (multiple of 48kHz audio sampling rate) */
+  /* /\* AUDIO PLL1 to 393.216 MHz (multiple of 48kHz audio sampling rate) *\/ */
 
-  mx8mn_ccm_configure_pll(CCM_ANALOG_AUDIO_PLL1, 262, 2, 3, 9437);
+  /* mx8mn_ccm_configure_pll(CCM_ANALOG_AUDIO_PLL1, 262, 2, 3, 9437); */
 
-  /* AUDIO PLL2 to 361.2672 MHz (multiple of 44.1kHz audio sampling rate) */
+  /* /\* AUDIO PLL2 to 361.2672 MHz (multiple of 44.1kHz audio sampling rate) *\/ */
 
-  mx8mn_ccm_configure_pll(CCM_ANALOG_AUDIO_PLL2, 361, 3, 3, 17511);
+  /* mx8mn_ccm_configure_pll(CCM_ANALOG_AUDIO_PLL2, 361, 3, 3, 17511); */
 
-  /* Audio AXI on PLL1 @ 800MHz */
+  /* /\* Audio AXI on PLL1 @ 800MHz *\/ */
 
-  mx8mn_ccm_configure_clock(AUDIO_AXI_CLK_ROOT, SYSTEM_PLL1_CLK, 1, 1);
+  /* mx8mn_ccm_configure_clock(AUDIO_AXI_CLK_ROOT, SYSTEM_PLL1_CLK, 1, 1); */
 
-  /* Audio AHB on PLL1 @ 400MHz */
+  /* /\* Audio AHB on PLL1 @ 400MHz *\/ */
 
-  mx8mn_ccm_configure_clock(AUDIO_AHB_CLK_ROOT, SYSTEM_PLL1_CLK, 1, 2);
+  /* mx8mn_ccm_configure_clock(AUDIO_AHB_CLK_ROOT, SYSTEM_PLL1_CLK, 1, 2); */
 }
